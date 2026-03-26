@@ -1,0 +1,324 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Main.master.cs" Inherits="HLVTimeSheet.Admin.Main" %>
+
+<%@ Register src="../Admin/UserControls/ucLeftMenu.ascx" tagname="ucLeftMenu" tagprefix="uc1" %>
+<%@ Register src="../Admin/UserControls/ucTopMenu.ascx" tagname="ucTopMenu" tagprefix="uc2" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="https://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta charset="UTF-8">
+    <title>Hondalogicom VietNam</title>
+    <link rel="shortcut icon" href="../Images/logoHLV.ico" /> 
+
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+    <!-- Bootstrap 3.3.6 -->
+    <link rel="stylesheet" href="../Content/bootstrap/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+    <!-- daterange picker -->
+    <link rel="stylesheet" href="../Content/plugins/daterangepicker/daterangepicker-bs3.css">
+    <!-- bootstrap datepicker -->
+    <link rel="stylesheet" href="../Content/plugins/datepicker/datepicker3.css">
+    <!-- iCheck for checkboxes and radio inputs -->
+    <link rel="stylesheet" href="../Content/plugins/iCheck/all.css">
+    <!-- Bootstrap Color Picker -->
+    <link rel="stylesheet" href="../Content/plugins/colorpicker/bootstrap-colorpicker.min.css">
+    <!-- Bootstrap time Picker -->
+    <link rel="stylesheet" href="../Content/plugins/timepicker/bootstrap-timepicker.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="../Content/plugins/select2/select2.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="../Content/dist/css/AdminLTE.min.css">
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+        folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="../Content/dist/css/skins/_all-skins.min.css">
+
+    <link href="../Content/bootstrap-table-master/src/bootstrap-table.css" rel="stylesheet" type="text/css" />
+    <script src="../Content/bootstrap-table-master/src/bootstrap-table.js" type="text/javascript"></script>
+    <script src="../Content/bootstrap-table-master/src/extensions/multiple-sort/bootstrap-table-multiple-sort.js" type="text/javascript"></script>
+
+    <!-- jQuery 2.2.0 -->
+    <script type="text/javascript" src="../Content/plugins/jQuery/jQuery-2.2.0.min.js"></script>
+
+    <style type="text/css" >
+	 
+        /* START CSS NEEDED ONLY IN DEMO */
+	
+	    #mainContainer{
+		    width:400px;
+		    margin:0 auto;
+		    text-align:left;
+		    height:100%;
+		    border-left:3px double #000;
+		    border-right:3px double #000;
+	    } 
+	    #formContent{
+		    padding:5px;
+	    }
+	    /* END CSS ONLY NEEDED IN DEMO */
+			
+	    /* Big box with list of options */
+	    #ajax_listOfOptions{
+		    position:absolute;	/* Never change this one */
+		    width:700px;	/* Width of box */
+		    height:200px;	/* Height of box */
+		    overflow:auto;	/* Scrolling features */
+		    border:1px solid #317082;	/* Dark green border */
+		    background-color:#C5E8CD;	/* White background color */
+	        color: black;
+		    text-align:left;
+		    font-size:1.0em;
+		    z-index:100200;
+	    }
+	    #ajax_listOfOptions div{	/* General rule for both .optionDiv and .optionDivSelected */
+		    margin:1px;		
+		    padding:1px;
+		    cursor:pointer;
+		    font-size:1.0em;
+	    }
+	    #ajax_listOfOptions .optionDiv{	/* Div for each item in list */
+			
+	    }
+	    #ajax_listOfOptions .optionDivSelected{ /* Selected item in the list */
+		    background-color:#317082; /*mau khi di chuyen */
+		    color:#FFF;
+	    }
+	    #ajax_listOfOptions_iframe{
+		    background-color:#F00;
+		    position:absolute;
+		    z-index:5;
+	    }
+
+    </style>
+
+       <style>
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 60px;
+          height: 34px;
+        }
+
+        .switch input { 
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 26px;
+          width: 26px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+
+        input:checked + .slider {
+          background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+          box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+          -webkit-transform: translateX(26px);
+          -ms-transform: translateX(26px);
+          transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+          border-radius: 34px;
+        }
+
+        .slider.round:before {
+          border-radius: 50%;
+        }
+
+</style>
+
+    <script type="text/javascript" >
+
+        function keypress(e) //Hàm dùng d? ngan ngu?i dùng nh?p các ký t? khác ký t? s? vào TextBox
+        {
+            var keypressed = null;
+            if (window.event)
+                keypressed = window.event.keyCode; //IE
+            else
+                keypressed = e.which; //NON-IE, Standard
+
+            if (keypressed < 48 || keypressed > 57) {
+                if (keypressed == 8 || keypressed == 127 || keypressed == 37 || keypressed == 39 || keypressed == 0 || keypressed == 46) {//Phím Delete và Phím Back
+                    return;
+                }
+                return false;
+            }
+        }
+
+        function formatNumber(num) {
+            num = num.toString().replace(/\$|\,/g, '');
+            if (isNaN(num))
+                num = "0";
+            sign = (num == (num = Math.abs(num)));
+            num = Math.floor(num * 100 + 0.50000000001);
+            num = Math.floor(num / 100).toString();
+            for (var i = 0; i < Math.floor((num.length - (1 + i)) / 3); i++)
+                num = num.substring(0, num.length - (4 * i + 3)) + ',' +
+                    num.substring(num.length - (4 * i + 3));
+            return (((sign) ? '' : '-') + num);
+        }
+
+        function DinhDangTien(element) {
+
+            var giatri = element.value;
+            while (giatri.match(",")) {
+                giatri = giatri.replace(",", "");
+            }
+
+
+            if (giatri.value == '') {
+                element.value = '';
+            }
+            else {
+                element.value = formatNumber(giatri);
+            }
+        }
+
+        function FormartNumberJS(element) {
+
+            var giatri = element.value;
+            while (giatri.match(",")) {
+                giatri = giatri.replace(",", "");
+            }
+
+            if (giatri.value == '') {
+                element.value = '';
+            }
+            else {
+                element.value = formatNumber(giatri);
+            }
+        }
+
+        function roundDecimalsNum(number) {
+            if (number == "")
+                return "";
+            return +(Math.round(number + "e+1") + "e-1");
+        }
+
+    </script>
+
+</head>
+    <%--class="skin-purple fixed sidebar-mini--%>
+    <%--class="skin-purple sidebar-collapse"--%>
+<body class="skin-purple sidebar-collapse" style="background-color: #555299; " >
+<form id="form2" runat="server">
+
+<!-- Site wrapper -->
+    <div class="wrapper">
+      
+      <!-- TOP MENU  -->
+      <uc2:ucTopMenu ID="ucTopMenu1" runat="server" />
+
+      <!-- =============================================== -->
+
+      <!-- Left side column. contains the sidebar -->
+      <uc1:ucLeftMenu ID="ucLeftMenu1" runat="server" />
+
+      <!-- =============================================== -->
+
+      <!-- Content Wrapper. Contains page content -->
+      <div class="content-wrapper">
+        
+            <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+        
+            </asp:ContentPlaceHolder>
+
+      </div><!-- /.content-wrapper -->
+
+    </div><!-- ./wrapper -->
+
+    <!-- Bootstrap 3.3.6 -->
+    <script src="../Content/bootstrap/js/bootstrap.min.js"></script>
+    <!-- Select2 -->
+    <script src="../Content/plugins/select2/select2.full.min.js"></script>
+
+    <!-- InputMask -->
+    <script src="../Content/plugins/input-mask/jquery.inputmask.js"></script>
+    <script src="../Content/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>
+    <script src="../Content/plugins/input-mask/jquery.inputmask.extensions.js"></script>
+
+    <!-- date-range-picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
+    <script src="../Content/plugins/daterangepicker/daterangepicker.js"></script>
+    <!-- bootstrap datepicker -->
+    <script src="../Content/plugins/datepicker/bootstrap-datepicker.js"></script>
+    <!-- bootstrap color picker -->
+    <script src="../Content/plugins/colorpicker/bootstrap-colorpicker.min.js"></script>
+    <!-- bootstrap time picker -->
+    <script src="../Content/plugins/timepicker/bootstrap-timepicker.min.js"></script>
+    <!-- SlimScroll 1.3.0 -->
+    <script src="../Content/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+    <!-- iCheck 1.0.1 -->
+    <script src="../Content/plugins/iCheck/icheck.min.js"></script>
+    <!-- FastClick -->
+    <script src="../Content/plugins/fastclick/fastclick.js"></script>
+    <!-- AdminLTE App -->
+    <script src="../Content/dist/js/app.min.js"></script>
+    <!-- AdminLTE for demo purposes -->
+    <script src="../Content/dist/js/demo.js"></script>
+    
+    <script type="text/javascript">
+        $(function () {
+
+            //Initialize Select2 Elements
+            $(".select2").select2();
+
+            //Date picker
+            $('.datepicker').datepicker({
+                format: 'dd-mm-yyyy',
+                autoclose: true
+            });
+
+            //Date picker
+            $('.datepicker2').datepicker({
+                format: 'yyyymmdd',
+                autoclose: true
+            });
+
+
+            //Date picker
+            $('.datepicker3').datepicker({
+                format: 'hh:mm',
+                autoclose: true
+            });
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+        });
+    </script>
+
+</form>
+</body>
+</html>

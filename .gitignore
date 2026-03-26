@@ -1,0 +1,88 @@
+## Visual Studio / ASP.NET
+
+# Build output
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# NuGet packages
+packages/
+*.nupkg
+*.snupkg
+**/packages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Publish output
+publish/
+
+# ASP.NET
+App_Data/
+App_LocalResources/
+
+# Windows thumbnail cache
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+
+# IDE
+*.swp
+*~
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Sensitive config (không commit thông tin nhạy cảm)
+Web.config.user
+connectionStrings.config
+appSettings.secret.config
+
+# Claude AI memory (không commit vào project)
+.claude/

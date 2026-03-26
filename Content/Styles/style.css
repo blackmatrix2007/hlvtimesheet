@@ -1,0 +1,105 @@
+/* * {margin:0; padding:0; outline:0}
+body {font:11px Verdana,Arial; margin:25px; background:#fff url(../Images/bg.gif) repeat-x} */
+#tablewrapper {width:100%; margin:0 auto}
+#tableheader { height:auto; }
+.search {float:left; padding:6px; border:1px solid #c6d5e1; background:#fff}
+#tableheader select {float:left; font-size:12px; width:210px; padding:2px 4px 4px}
+#tableheader input {float:left; font-size:12px; width:200px; padding:2px 4px 4px; margin-left:0px}
+.details {float:right; padding-top:12px}
+.details div {float:left; margin-left:15px; font-size:12px}
+.tinytable {width:100%; border-left:1px solid #c6d5e1; border-top:1px solid #c6d5e1; border-bottom:none; font-size:12px; }
+.tinytable th {background:url(../Images/header-bg.gif); text-align:left; color:#cfdce7; border:1px solid #fff; border-right:none}
+.tinytable th h3 {font-size:12px; padding:0px}
+.tinytable td {padding:4px 6px 6px; border-bottom:1px solid #c6d5e1; border-right:1px solid #c6d5e1}
+.tinytable .head h3 {background:url(../Images/sort.gif) 7px center no-repeat; cursor:pointer; padding-left:18px}
+.tinytable .desc, .sortable .asc {background:url(../Images/header-selected-bg.gif)}
+.tinytable .desc h3 {background:url(../Images/desc.gif) 7px center no-repeat; cursor:pointer; padding-left:18px}
+.tinytable .asc h3 {background:url(../Images/asc.gif) 7px  center no-repeat; cursor:pointer; padding-left:18px}
+.tinytable .head:hover, .tinytable .desc:hover, .tinytable .asc:hover {color:#fff}
+.tinytable .evenrow td {background:#fff}
+.tinytable .oddrow td {background:#ecf2f6}
+.tinytable td.evenselected {background:#ecf2f6}
+.tinytable td.oddselected {background:#dce6ee}
+.tinytable tfoot {background:#fff; font-weight:bold}
+.tinytable tfoot td {padding:6px 8px 8px}
+#tablefooter {height:15px; margin-top:20px}
+#tablenav {float:left}
+#tablenav img {cursor:pointer}
+#tablenav div {float:left; margin-right:15px}
+#tablelocation {float:right; font-size:12px}
+#tablelocation select {margin-right:3px}
+#tablelocation div {float:left; margin-left:15px}
+.page {margin-top:2px; font-style:italic}
+#selectedrow td {background:#c6d5e1}
+
+
+.button_example{
+	border:1px solid #7d99ca; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:12px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;font-weight:bold; color: #FFFFFF;
+	 background-color: #a5b8da; background-image: linear-gradient(to bottom, #a5b8da, #7089b3);
+	 }
+
+.button_example:hover{
+	 border:1px solid #5d7fbc;
+	 background-color: #819bcb; background-image: linear-gradient(to bottom, #819bcb, #536f9d);
+	 }
+
+.button_example1{
+	border:1px solid #7d99ca; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:12px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;font-weight:bold; color: #FFFFFF;
+	 background-color: #a5b8da; background-image: linear-gradient(to bottom, #a5b8da, #7089b3);
+	 }
+
+.button_example1:hover{
+	 border:1px solid #5d7fbc;
+	 background-color: #819bcb; background-image: linear-gradient(to bottom, #819bcb, #536f9d);
+	 }
+
+.button_example2{
+border:1px solid #67bcd1; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:12px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;font-weight:bold; color: #FFFFFF;
+ background-color: #92cfde; background-image: linear-gradient(to bottom, #92cfde, #76bdd1);
+ }
+
+.button_example2:hover{
+ border:1px solid #44adc6;
+ background-color: #6bbed2; background-image: linear-gradient(to bottom, #6bbed2, #50abc4);
+ }
+
+.button_example3{
+border:1px solid #ffad41; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:12px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;font-weight:bold; color: #FFFFFF;
+ background-color: #ffc579; background-image: linear-gradient(to bottom, #ffc579, #fb9d23);
+ }
+
+.button_example3:hover{
+ border:1px solid #ff9913;
+ background-color: #ffaf46; background-image: linear-gradient(to bottom, #ffaf46, #e78404);
+ }
+
+.button_example4{
+border:1px solid #ff6262; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:12px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;font-weight:bold; color: #FFFFFF;
+ background-color: #ff9a9a; background-image: linear-gradient(to bottom, #ff9a9a, #ff4040);
+ }
+
+.button_example4:hover{
+ border:1px solid #ff3434;
+ background-color: #ff6767; background-image: linear-gradient(to bottom, #ff6767, #ff0d0d);
+ }
+
+.button_example5{
+border:1px solid #15aeec; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:12px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;font-weight:bold; color: #FFFFFF;
+ background-color: #49c0f0; background-image: linear-gradient(to bottom, #49c0f0, #2CAFE3);
+ }
+
+.button_example5:hover{
+ border:1px solid #1090c3;
+ background-color: #1ab0ec; background-image: linear-gradient(to bottom, #1ab0ec, #1a92c2);
+ }
+
+.button_example6{
+border:1px solid #8a66f4; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:12px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;font-weight:bold; color: #FFFFFF;
+ background-color: #b29af8; background-image: linear-gradient(to bottom, #b29af8, #9174ed);
+ }
+
+.button_example6:hover{
+ border:1px solid #693bf1;
+ background-color: #8e6af5; background-image: linear-gradient(to bottom, #8e6af5, #6d47e7);
+ }
+
