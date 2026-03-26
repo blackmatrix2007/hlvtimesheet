@@ -1,0 +1,124 @@
+using System;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.UI;
+using HLVTimeSheet.Model.DeviceManager;
+
+namespace HLVTimeSheet.Admin
+{
+    public partial class DeviceSync : Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                txtFrom.Text = DateTime.Today.ToString("yyyy-MM-dd");
+                txtTo.Text   = DateTime.Today.ToString("yyyy-MM-dd");
+            }
+        }
+
+        // ─── Kéo chấm công ───────────────────────────────────────────────────────
+
+        protected void BtnPull_Click(object sender, EventArgs e)
+        {
+            Task.Run(async () => await PullAttendanceAsync()).GetAwaiter().GetResult();
+        }
+
+        private async Task PullAttendanceAsync()
+        {
+            try
+            {
+                var svc = new AttendanceSyncService();
+                int saved = await svc.PullAndSaveAsync(txtFrom.Text, txtTo.Text);
+                lblPullResult.Text = $"<div class='alert alert-success'>Đã lưu {saved} bản ghi chấm công.</div>";
+            }
+            catch (Exception ex)
+            {
+                lblPullResult.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
+            }
+        }
+
+        // ─── Tổng hợp hôm nay ────────────────────────────────────────────────────
+
+        protected void BtnToday_Click(object sender, EventArgs e)
+        {
+            Task.Run(async () => await LoadTodayAsync()).GetAwaiter().GetResult();
+        }
+
+        private async Task LoadTodayAsync()
+        {
+            try
+            {
+                var svc = new AttendanceSyncService();
+                var summary = await svc.GetTodaySummaryAsync();
+                if (summary == null)
+                {
+                    litToday.Text = "<p class='text-muted'>Không có dữ liệu.</p>";
+                    return;
+                }
+
+                var sb = new StringBuilder();
+                sb.Append("<table class='table table-sm table-bordered'>");
+                sb.Append("<tr><th>Ngày</th><th>Check-in</th><th>Check-out</th><th>NV duy nhất</th></tr>");
+                sb.AppendFormat("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>",
+                    summary.Date, summary.TotalCheckIns, summary.TotalCheckOuts, summary.UniqueEmployees);
+                sb.Append("</table>");
+
+                if (summary.RecentLogs?.Count > 0)
+                {
+                    sb.Append("<h6>Gần đây:</h6><table class='table table-sm'>");
+                    sb.Append("<tr><th>Mã NV</th><th>Họ tên</th><th>Loại</th><th>Thời gian</th></tr>");
+                    foreach (var log in summary.RecentLogs)
+                    {
+                        sb.AppendFormat("<tr><td>{0}</td><td>{1}</td><td><span class='badge {2}'>{3}</span></td><td>{4:HH:mm:ss}</td></tr>",
+                            log.EmployeeCode, log.EmployeeName,
+                            log.Type == "check_in" ? "badge-success" : "badge-danger",
+                            log.Type, log.Timestamp);
+                    }
+                    sb.Append("</table>");
+                }
+
+                litToday.Text = sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                litToday.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
+            }
+        }
+
+        // ─── Danh sách nhân viên ─────────────────────────────────────────────────
+
+        protected void BtnListEmp_Click(object sender, EventArgs e)
+        {
+            Task.Run(async () => await LoadEmployeesAsync()).GetAwaiter().GetResult();
+        }
+
+        private async Task LoadEmployeesAsync()
+        {
+            try
+            {
+                var svc = new EmployeeSyncService();
+                var employees = await svc.GetAllEmployeesFromDeviceAsync();
+
+                var sb = new StringBuilder();
+                sb.AppendFormat("<p>Tổng: <strong>{0}</strong> nhân viên</p>", employees.Count);
+                sb.Append("<table class='table table-sm table-bordered'>");
+                sb.Append("<tr><th>Mã NV</th><th>Họ tên</th><th>Phòng ban</th><th>Chức vụ</th><th>Ảnh khuôn mặt</th></tr>");
+                foreach (var emp in employees)
+                {
+                    int faceCount = emp.FaceImages?.Count ?? 0;
+                    sb.AppendFormat(
+                        "<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td><span class='badge {4}'>{5} ảnh</span></td></tr>",
+                        emp.EmployeeCode, emp.FullName, emp.Department, emp.Position,
+                        faceCount > 0 ? "badge-success" : "badge-danger", faceCount);
+                }
+                sb.Append("</table>");
+                litEmployees.Text = sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                litEmployees.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
+            }
+        }
+    }
+}
