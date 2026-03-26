@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace HLVTimeSheet.Model.DeviceManager
 {
-    // ─── Response wrapper ────────────────────────────────────────────────────────
+    // ─── API Response wrapper ─────────────────────────────────────────────────────
 
     public class ApiResponse<T>
     {
@@ -126,5 +126,69 @@ namespace HLVTimeSheet.Model.DeviceManager
 
         [JsonProperty("recent_logs")]
         public List<DmAttendanceLog> RecentLogs { get; set; }
+    }
+
+    // ─── Webhook payload (DeviceManager → HLVTimeSheet) ──────────────────────────
+    // Tương ứng với WebhookAttendanceDto trong source/business-service-nodejs
+
+    public class WebhookAttendanceDto
+    {
+        /// <summary>"attendance.checkin" hoặc "attendance.checkout"</summary>
+        [JsonProperty("event")]
+        public string Event { get; set; }
+
+        [JsonProperty("employeeCode")]
+        public string EmployeeCode { get; set; }
+
+        /// <summary>Thời gian chấm công ISO 8601</summary>
+        [JsonProperty("checkingTime")]
+        public string CheckingTime { get; set; }
+
+        /// <summary>Ảnh khuôn mặt base64 (tuỳ chọn)</summary>
+        [JsonProperty("imageBase64")]
+        public string ImageBase64 { get; set; }
+
+        [JsonProperty("deviceName")]
+        public string DeviceName { get; set; }
+
+        [JsonProperty("deviceId")]
+        public int? DeviceId { get; set; }
+
+        [JsonProperty("latitude")]
+        public double? Latitude { get; set; }
+
+        [JsonProperty("longitude")]
+        public double? Longitude { get; set; }
+
+        [JsonProperty("gpsAccuracy")]
+        public double? GpsAccuracy { get; set; }
+
+        [JsonProperty("locationId")]
+        public int? LocationId { get; set; }
+
+        [JsonProperty("notes")]
+        public string Notes { get; set; }
+
+        /// <summary>Điểm tin cậy nhận diện khuôn mặt (0.0 – 1.0)</summary>
+        [JsonProperty("faceConfidence")]
+        public double? FaceConfidence { get; set; }
+
+        [JsonProperty("source")]
+        public string Source { get; set; }
+
+        /// <summary>Chữ ký HMAC-SHA256 để xác thực webhook</summary>
+        [JsonProperty("signature")]
+        public string Signature { get; set; }
+    }
+
+    // ─── Kết quả xử lý webhook ───────────────────────────────────────────────────
+
+    public class WebhookResult
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public int? RecordId { get; set; }
+        public bool IsValid { get; set; }
+        public string RejectionReason { get; set; }
     }
 }

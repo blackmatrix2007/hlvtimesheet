@@ -9,26 +9,22 @@ namespace HLVTimeSheet.Model.DeviceManager
 {
     /// <summary>
     /// HTTP client giao tiếp với DeviceManager REST API.
-    /// Sử dụng X-API-Key header để xác thực.
+    /// Xác thực bằng X-API-Key header (giống source/business-service-nodejs).
     /// </summary>
     public class DeviceManagerApiClient : IDisposable
     {
         private readonly HttpClient _http;
-        private readonly string _apiKey;
 
-        public DeviceManagerApiClient() : this(
-            DeviceManagerConfig.BaseUrl,
-            DeviceManagerConfig.ApiKey)
-        { }
-
-        public DeviceManagerApiClient(string baseUrl, string apiKey)
+        public DeviceManagerApiClient(DeviceManagerConfig config)
         {
-            _apiKey = apiKey;
-            _http = new HttpClient { BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/") };
-            _http.DefaultRequestHeaders.Add("X-API-Key", _apiKey);
+            _http = new HttpClient
+            {
+                BaseAddress = new Uri(config.BaseUrl.TrimEnd('/') + "/"),
+                Timeout     = TimeSpan.FromSeconds(30),
+            };
+            _http.DefaultRequestHeaders.Add("X-API-Key", config.ApiKey);
             _http.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
-            _http.Timeout = TimeSpan.FromSeconds(30);
         }
 
         // ─── GET ──────────────────────────────────────────────────────────────────
@@ -37,30 +33,26 @@ namespace HLVTimeSheet.Model.DeviceManager
         {
             var response = await _http.GetAsync(endpoint);
             await EnsureSuccessAsync(response);
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
         }
 
-        // ─── POST (JSON) ──────────────────────────────────────────────────────────
+        // ─── POST JSON ────────────────────────────────────────────────────────────
 
         public async Task<T> PostAsync<T>(string endpoint, object body)
         {
-            var json = JsonConvert.SerializeObject(body);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content  = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
             var response = await _http.PostAsync(endpoint, content);
             await EnsureSuccessAsync(response);
-            var responseJson = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(responseJson);
+            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
         }
 
-        // ─── POST (multipart/form-data) ───────────────────────────────────────────
+        // ─── POST multipart/form-data ─────────────────────────────────────────────
 
         public async Task<T> PostMultipartAsync<T>(string endpoint, MultipartFormDataContent form)
         {
             var response = await _http.PostAsync(endpoint, form);
             await EnsureSuccessAsync(response);
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
         }
 
         // ─── DELETE ───────────────────────────────────────────────────────────────
@@ -69,8 +61,7 @@ namespace HLVTimeSheet.Model.DeviceManager
         {
             var response = await _http.DeleteAsync(endpoint);
             await EnsureSuccessAsync(response);
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
         }
 
         // ─── Helpers ──────────────────────────────────────────────────────────────

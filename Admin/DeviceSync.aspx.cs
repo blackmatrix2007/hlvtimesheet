@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.UI;
 using HLVTimeSheet.Model.DeviceManager;
 
@@ -14,23 +15,29 @@ namespace HLVTimeSheet.Admin
             {
                 txtFrom.Text = DateTime.Today.ToString("yyyy-MM-dd");
                 txtTo.Text   = DateTime.Today.ToString("yyyy-MM-dd");
+
+                // Hiển thị URL webhook để admin copy vào DeviceManager
+                var baseUrl = $"{Request.Scheme}://{Request.Url.Authority}";
+                litWebhookUrl.Text = HttpUtility.HtmlEncode(
+                    $"{baseUrl}/Admin/Hander/hdAttendanceWebhook.ashx");
             }
         }
 
-        // ─── Kéo chấm công ───────────────────────────────────────────────────────
+        // ─── PULL thủ công ────────────────────────────────────────────────────────
 
         protected void BtnPull_Click(object sender, EventArgs e)
         {
-            Task.Run(async () => await PullAttendanceAsync()).GetAwaiter().GetResult();
+            Task.Run(async () => await PullAsync()).GetAwaiter().GetResult();
         }
 
-        private async Task PullAttendanceAsync()
+        private async Task PullAsync()
         {
             try
             {
-                var svc = new AttendanceSyncService();
+                var svc   = new AttendanceSyncService();
                 int saved = await svc.PullAndSaveAsync(txtFrom.Text, txtTo.Text);
-                lblPullResult.Text = $"<div class='alert alert-success'>Đã lưu {saved} bản ghi chấm công.</div>";
+                lblPullResult.Text =
+                    $"<div class='alert alert-success'>Đã lưu/cập nhật <strong>{saved}</strong> bản ghi chấm công.</div>";
             }
             catch (Exception ex)
             {
@@ -49,13 +56,9 @@ namespace HLVTimeSheet.Admin
         {
             try
             {
-                var svc = new AttendanceSyncService();
+                var svc     = new AttendanceSyncService();
                 var summary = await svc.GetTodaySummaryAsync();
-                if (summary == null)
-                {
-                    litToday.Text = "<p class='text-muted'>Không có dữ liệu.</p>";
-                    return;
-                }
+                if (summary == null) { litToday.Text = "<p class='text-muted'>Không có dữ liệu.</p>"; return; }
 
                 var sb = new StringBuilder();
                 sb.Append("<table class='table table-sm table-bordered'>");
@@ -66,14 +69,19 @@ namespace HLVTimeSheet.Admin
 
                 if (summary.RecentLogs?.Count > 0)
                 {
-                    sb.Append("<h6>Gần đây:</h6><table class='table table-sm'>");
-                    sb.Append("<tr><th>Mã NV</th><th>Họ tên</th><th>Loại</th><th>Thời gian</th></tr>");
+                    sb.Append("<h6 class='mt-3'>Gần đây:</h6>");
+                    sb.Append("<table class='table table-sm'>");
+                    sb.Append("<tr><th>Mã NV</th><th>Họ tên</th><th>Loại</th><th>Thời gian</th><th>Độ tin cậy</th></tr>");
                     foreach (var log in summary.RecentLogs)
                     {
-                        sb.AppendFormat("<tr><td>{0}</td><td>{1}</td><td><span class='badge {2}'>{3}</span></td><td>{4:HH:mm:ss}</td></tr>",
-                            log.EmployeeCode, log.EmployeeName,
-                            log.Type == "check_in" ? "badge-success" : "badge-danger",
-                            log.Type, log.Timestamp);
+                        sb.AppendFormat(
+                            "<tr><td>{0}</td><td>{1}</td><td><span class='badge-{2}'>{3}</span></td><td>{4:HH:mm:ss}</td><td>{5:P0}</td></tr>",
+                            HttpUtility.HtmlEncode(log.EmployeeCode),
+                            HttpUtility.HtmlEncode(log.EmployeeName),
+                            log.Type == "check_in" ? "success" : "warning",
+                            log.Type == "check_in" ? "Vào" : "Ra",
+                            log.Timestamp,
+                            log.ConfidenceScore);
                     }
                     sb.Append("</table>");
                 }
@@ -97,20 +105,25 @@ namespace HLVTimeSheet.Admin
         {
             try
             {
-                var svc = new EmployeeSyncService();
+                var svc       = new EmployeeSyncService();
                 var employees = await svc.GetAllEmployeesFromDeviceAsync();
 
                 var sb = new StringBuilder();
-                sb.AppendFormat("<p>Tổng: <strong>{0}</strong> nhân viên</p>", employees.Count);
+                sb.AppendFormat("<p>Tổng: <strong>{0}</strong> nhân viên đã đăng ký</p>", employees.Count);
                 sb.Append("<table class='table table-sm table-bordered'>");
                 sb.Append("<tr><th>Mã NV</th><th>Họ tên</th><th>Phòng ban</th><th>Chức vụ</th><th>Ảnh khuôn mặt</th></tr>");
                 foreach (var emp in employees)
                 {
                     int faceCount = emp.FaceImages?.Count ?? 0;
                     sb.AppendFormat(
-                        "<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td><span class='badge {4}'>{5} ảnh</span></td></tr>",
-                        emp.EmployeeCode, emp.FullName, emp.Department, emp.Position,
-                        faceCount > 0 ? "badge-success" : "badge-danger", faceCount);
+                        "<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td>" +
+                        "<td><span class='badge-{4}'>{5} ảnh</span></td></tr>",
+                        HttpUtility.HtmlEncode(emp.EmployeeCode),
+                        HttpUtility.HtmlEncode(emp.FullName),
+                        HttpUtility.HtmlEncode(emp.Department ?? ""),
+                        HttpUtility.HtmlEncode(emp.Position  ?? ""),
+                        faceCount > 0 ? "success" : "danger",
+                        faceCount);
                 }
                 sb.Append("</table>");
                 litEmployees.Text = sb.ToString();
