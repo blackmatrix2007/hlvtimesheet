@@ -16,6 +16,7 @@
     </style>
 </head>
 <body>
+<form id="form1" runat="server">
 <div class="container-fluid">
     <h4 class="mb-3">Đồng bộ máy chấm công (DeviceManager)</h4>
 
@@ -79,5 +80,6 @@
 </div>
 <script src="../Scripts/jquery-3.6.0.min.js"></script>
 <script src="../Content/bootstrap/js/bootstrap.min.js"></script>
+</form>
 </body>
 </html>
