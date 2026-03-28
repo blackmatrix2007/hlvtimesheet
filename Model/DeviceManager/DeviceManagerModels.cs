@@ -130,9 +130,15 @@ namespace HLVTimeSheet.Model.DeviceManager
             }
         }
 
-        /// <summary>Thời gian chấm công — field thực tế là "checkInTime"</summary>
+        /// <summary>Thời gian chấm công — PULL API dùng "checkInTime", Today summary dùng "timestamp"</summary>
         [JsonProperty("checkInTime")]
-        public DateTime Timestamp { get; set; }
+        public DateTime CheckInTime { get; set; }
+
+        [JsonProperty("timestamp")]
+        public DateTime TimestampUtc { get; set; }
+
+        /// <summary>Lấy thời gian từ field nào có giá trị</summary>
+        public DateTime Timestamp => CheckInTime != default ? CheckInTime : TimestampUtc;
     }
 
     public class DmCheckInListResponse
