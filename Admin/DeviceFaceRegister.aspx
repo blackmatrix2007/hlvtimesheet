@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeFile="DeviceFaceRegister.aspx.cs" Inherits="HLVTimeSheet.Admin.DeviceFaceRegister" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeFile="DeviceFaceRegister.aspx.cs" Inherits="HLVTimeSheet.Admin.DeviceFaceRegister" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
