@@ -132,6 +132,16 @@ namespace HLVTimeSheet.Admin
         protected global::System.Web.UI.WebControls.Literal litMapping;
 
         /// <summary>
+        /// btnShowHlvStaff control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnShowHlvStaff;
+
+        /// <summary>
+        /// litHlvStaff control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litHlvStaff;
+
+        /// <summary>
         /// btnListEmp control.
         /// </summary>
         /// <remarks>

@@ -173,6 +173,36 @@ namespace HLVTimeSheet.Admin
             }
         }
 
+        // ─── Danh sách NV trong DanhSachNhanSu ───────────────────────────────────
+
+        protected void BtnShowHlvStaff_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var svc  = new DeviceAttendanceImportService();
+                var rows = svc.GetHlvStaffList();
+
+                var sb = new StringBuilder();
+                sb.AppendFormat("<p>Tổng: <strong>{0}</strong> nhân viên (trangthai=1)</p>", rows.Rows.Count);
+                sb.Append("<table class='table table-sm table-bordered'>");
+                sb.Append("<tr><th>Mã (ma)</th><th>Tên</th><th>Phòng ban</th><th>Trạng thái</th></tr>");
+                foreach (System.Data.DataRow row in rows.Rows)
+                {
+                    sb.AppendFormat("<tr><td><strong>{0}</strong></td><td>{1}</td><td>{2}</td><td>{3}</td></tr>",
+                        HttpUtility.HtmlEncode(row["ma"].ToString()),
+                        HttpUtility.HtmlEncode(row["ten"].ToString()),
+                        HttpUtility.HtmlEncode(row["phongban"].ToString()),
+                        HttpUtility.HtmlEncode(row["trangthai"].ToString()));
+                }
+                sb.Append("</table>");
+                litHlvStaff.Text = sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                litHlvStaff.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
+            }
+        }
+
         // ─── Danh sách nhân viên ─────────────────────────────────────────────────
 
         protected void BtnListEmp_Click(object sender, EventArgs e)
