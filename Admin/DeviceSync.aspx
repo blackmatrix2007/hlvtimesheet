@@ -70,6 +70,18 @@
         <asp:Label ID="lblImportResult" runat="server" />
     </div>
 
+    <!-- Debug: Kiểm tra mapping mã NV -->
+    <div class="card">
+        <h6>Kiểm tra mapping mã NV (Debug)</h6>
+        <p class="text-muted mb-2" style="font-size:.85em">
+            So sánh mã nhân viên trong <code>ChamCong_Device</code> với bảng <code>DanhSachNhanSu</code>.
+            Mã phải khớp chính xác để Import thành công.
+        </p>
+        <asp:Button ID="btnCheckMapping" runat="server" Text="Kiểm tra mapping"
+                    CssClass="btn btn-sm btn-info mb-2" OnClick="BtnCheckMapping_Click" />
+        <asp:Literal ID="litMapping" runat="server" />
+    </div>
+
     <!-- Nhân viên đã đăng ký khuôn mặt -->
     <div class="card">
         <h6>Nhân viên đã đăng ký khuôn mặt trên DeviceManager</h6>
