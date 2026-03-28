@@ -4,7 +4,8 @@ using Newtonsoft.Json;
 
 namespace HLVTimeSheet.Model.DeviceManager
 {
-    // ─── API Response wrapper ─────────────────────────────────────────────────────
+    // ─── API Response wrapper (chấm công + today/summary) ────────────────────────
+    // Dạng: { "success": true, "data": { ... } }
 
     public class ApiResponse<T>
     {
@@ -18,14 +19,48 @@ namespace HLVTimeSheet.Model.DeviceManager
         public string Message { get; set; }
     }
 
+    // ─── API Response wrapper (danh sách nhân viên) ───────────────────────────────
+    // Dạng: { "code": 200, "message": "Success", "body": [...], "page": { ... } }
+
+    public class ApiListResponse<T>
+    {
+        [JsonProperty("code")]
+        public int Code { get; set; }
+
+        [JsonProperty("message")]
+        public string Message { get; set; }
+
+        [JsonProperty("body")]
+        public List<T> Body { get; set; }
+
+        [JsonProperty("page")]
+        public ApiPageInfo Page { get; set; }
+    }
+
+    public class ApiPageInfo
+    {
+        [JsonProperty("total")]
+        public int Total { get; set; }
+
+        [JsonProperty("page")]
+        public int Page { get; set; }
+
+        [JsonProperty("limit")]
+        public int Limit { get; set; }
+
+        [JsonProperty("totalPages")]
+        public int TotalPages { get; set; }
+    }
+
     // ─── Employee ─────────────────────────────────────────────────────────────────
+    // Actual API fields: employeeCode, fullName, faces[].faceImageUrl
 
     public class DmEmployee
     {
-        [JsonProperty("employee_code")]
+        [JsonProperty("employeeCode")]
         public string EmployeeCode { get; set; }
 
-        [JsonProperty("full_name")]
+        [JsonProperty("fullName")]
         public string FullName { get; set; }
 
         [JsonProperty("email")]
@@ -40,65 +75,64 @@ namespace HLVTimeSheet.Model.DeviceManager
         [JsonProperty("position")]
         public string Position { get; set; }
 
-        [JsonProperty("face_images")]
+        [JsonProperty("faces")]
         public List<DmFaceImage> FaceImages { get; set; }
 
-        [JsonProperty("created_at")]
+        [JsonProperty("createdAt")]
         public DateTime? CreatedAt { get; set; }
     }
 
     public class DmFaceImage
     {
-        [JsonProperty("image_url")]
+        [JsonProperty("faceImageUrl")]
         public string ImageUrl { get; set; }
 
-        [JsonProperty("is_primary")]
+        [JsonProperty("isPrimary")]
         public bool IsPrimary { get; set; }
-    }
 
-    public class DmEmployeeListResponse
-    {
-        [JsonProperty("employees")]
-        public List<DmEmployee> Employees { get; set; }
-
-        [JsonProperty("total")]
-        public int Total { get; set; }
-
-        [JsonProperty("page")]
-        public int Page { get; set; }
-
-        [JsonProperty("limit")]
-        public int Limit { get; set; }
+        [JsonProperty("faceQuality")]
+        public string FaceQuality { get; set; }
     }
 
     // ─── Attendance ───────────────────────────────────────────────────────────────
+    // Actual API fields: id (UUID), employeeCode, checkInTime, localConfidence
 
     public class DmAttendanceLog
     {
+        // id là UUID string từ DeviceManager
         [JsonProperty("id")]
-        public int Id { get; set; }
+        public string Id { get; set; }
 
-        [JsonProperty("employee_code")]
+        [JsonProperty("employeeCode")]
         public string EmployeeCode { get; set; }
 
-        [JsonProperty("employee_name")]
+        [JsonProperty("employeeName")]
         public string EmployeeName { get; set; }
 
-        [JsonProperty("device_id")]
+        [JsonProperty("deviceId")]
         public string DeviceId { get; set; }
 
         /// <summary>"check_in" hoặc "check_out"</summary>
         [JsonProperty("type")]
         public string Type { get; set; }
 
-        [JsonProperty("confidence_score")]
-        public double ConfidenceScore { get; set; }
+        /// <summary>Độ tin cậy nhận diện — field thực tế là "localConfidence" (string)</summary>
+        [JsonProperty("localConfidence")]
+        public string LocalConfidence { get; set; }
 
-        [JsonProperty("timestamp")]
+        public double ConfidenceScore
+        {
+            get
+            {
+                double.TryParse(LocalConfidence, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out double v);
+                return v;
+            }
+        }
+
+        /// <summary>Thời gian chấm công — field thực tế là "checkInTime"</summary>
+        [JsonProperty("checkInTime")]
         public DateTime Timestamp { get; set; }
-
-        [JsonProperty("synced")]
-        public bool Synced { get; set; }
     }
 
     public class DmCheckInListResponse
@@ -115,17 +149,21 @@ namespace HLVTimeSheet.Model.DeviceManager
         [JsonProperty("date")]
         public string Date { get; set; }
 
-        [JsonProperty("total_check_ins")]
+        // Actual fields: checkIns, checkOuts, totalLogs, logs
+        [JsonProperty("checkIns")]
         public int TotalCheckIns { get; set; }
 
-        [JsonProperty("total_check_outs")]
+        [JsonProperty("checkOuts")]
         public int TotalCheckOuts { get; set; }
 
-        [JsonProperty("unique_employees")]
-        public int UniqueEmployees { get; set; }
+        [JsonProperty("totalLogs")]
+        public int TotalLogs { get; set; }
 
-        [JsonProperty("recent_logs")]
+        [JsonProperty("logs")]
         public List<DmAttendanceLog> RecentLogs { get; set; }
+
+        // Computed — không có trực tiếp trong API
+        public int UniqueEmployees => RecentLogs?.Count ?? 0;
     }
 
     // ─── Webhook payload (DeviceManager → HLVTimeSheet) ──────────────────────────

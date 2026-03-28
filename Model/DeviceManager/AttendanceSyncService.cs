@@ -179,8 +179,14 @@ namespace HLVTimeSheet.Model.DeviceManager
             string endDate,
             string employeeCode = null)
         {
+            // DeviceManager dùng Between(startDate, endDate) với ngày không có giờ
+            // → endDate phải +1 ngày để bao gồm toàn bộ ngày endDate
+            string endDateExclusive = endDate;
+            if (DateTime.TryParse(endDate, out DateTime dtEnd))
+                endDateExclusive = dtEnd.AddDays(1).ToString("yyyy-MM-dd");
+
             var endpoint = $"attendance/external/check-ins" +
-                           $"?companyId={_config.CustomerId}&startDate={startDate}&endDate={endDate}";
+                           $"?companyId={_config.CustomerId}&startDate={startDate}&endDate={endDateExclusive}";
             if (!string.IsNullOrEmpty(employeeCode))
                 endpoint += $"&employeeCode={employeeCode}";
 
@@ -368,7 +374,7 @@ namespace HLVTimeSheet.Model.DeviceManager
 
         private static int UpsertFromPullLog(SqlConnection conn, DmAttendanceLog log)
         {
-            // PULL: dùng dmLogId để tránh trùng lặp
+            // PULL: dùng dmLogId (UUID string) để tránh trùng lặp
             const string sql = @"
                 MERGE ChamCong_Device AS target
                 USING (SELECT @dmLogId AS dmLogId) AS source ON target.dmLogId = source.dmLogId
@@ -385,7 +391,7 @@ namespace HLVTimeSheet.Model.DeviceManager
 
             using (var cmd = new SqlCommand(sql, conn))
             {
-                cmd.Parameters.AddWithValue("@dmLogId",  log.Id);
+                cmd.Parameters.AddWithValue("@dmLogId",  (object)log.Id ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@mapNV",    log.EmployeeCode ?? "");
                 cmd.Parameters.AddWithValue("@loai",     log.Type ?? "check_in");
                 cmd.Parameters.AddWithValue("@thoiGian", log.Timestamp);
@@ -405,7 +411,7 @@ namespace HLVTimeSheet.Model.DeviceManager
                 BEGIN
                     CREATE TABLE ChamCong_Device (
                         pk_seq          INT IDENTITY(1,1) PRIMARY KEY,
-                        dmLogId         INT,                        -- ID từ DeviceManager (PULL)
+                        dmLogId         NVARCHAR(100),              -- UUID từ DeviceManager (PULL)
                         mapNV           NVARCHAR(50)  NOT NULL,
                         loai            NVARCHAR(20)  NOT NULL,     -- check_in / check_out
                         thoiGian        DATETIME      NOT NULL,
@@ -413,15 +419,15 @@ namespace HLVTimeSheet.Model.DeviceManager
                         deviceName      NVARCHAR(200),
                         diemTin         FLOAT,                      -- face confidence 0.0-1.0
 
-                        -- GPS (từ source/attendance.entity.ts)
+                        -- GPS
                         latitude        FLOAT,
                         longitude       FLOAT,
                         gpsAccuracy     FLOAT,
 
-                        -- Audit trail (từ source/attendance.entity.ts)
-                        isValid         BIT           DEFAULT 1,    -- bản ghi chính thức
+                        -- Audit trail
+                        isValid         BIT           DEFAULT 1,
                         isDuplicate     BIT           DEFAULT 0,
-                        attemptNumber   INT           DEFAULT 1,    -- lần chấm thứ mấy trong ngày
+                        attemptNumber   INT           DEFAULT 1,
                         rejectionReason NVARCHAR(500),
                         source          NVARCHAR(100) DEFAULT 'device-manager',
 
@@ -433,6 +439,26 @@ namespace HLVTimeSheet.Model.DeviceManager
                         ON ChamCong_Device (mapNV, thoiGian);
                     CREATE INDEX IX_ChamCong_Device_Valid
                         ON ChamCong_Device (mapNV, thoiGian, isValid, loai);
+                END
+                ELSE
+                BEGIN
+                    -- Migration: đổi dmLogId từ INT → NVARCHAR(100) nếu cần
+                    IF EXISTS (
+                        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE TABLE_NAME = 'ChamCong_Device'
+                          AND COLUMN_NAME = 'dmLogId'
+                          AND DATA_TYPE = 'int'
+                    )
+                    BEGIN
+                        ALTER TABLE ChamCong_Device DROP CONSTRAINT IF EXISTS UQ_ChamCong_Device_DmLogId;
+                        ALTER TABLE ChamCong_Device ALTER COLUMN dmLogId NVARCHAR(100);
+                        IF NOT EXISTS (
+                            SELECT 1 FROM sys.indexes
+                            WHERE name = 'UQ_ChamCong_Device_DmLogId'
+                        )
+                        ALTER TABLE ChamCong_Device
+                            ADD CONSTRAINT UQ_ChamCong_Device_DmLogId UNIQUE (dmLogId);
+                    END
                 END";
 
             using (var cmd = new SqlCommand(ddl, conn))

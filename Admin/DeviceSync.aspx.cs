@@ -20,7 +20,7 @@ namespace HLVTimeSheet.Admin
                 txtImportTo.Text   = DateTime.Today.ToString("yyyy-MM-dd");
 
                 // Hiển thị URL webhook để admin copy vào DeviceManager
-                var baseUrl = $"{Request.Scheme}://{Request.Url.Authority}";
+                var baseUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}";
                 litWebhookUrl.Text = HttpUtility.HtmlEncode(
                     $"{baseUrl}/Admin/Hander/hdAttendanceWebhook.ashx");
             }

@@ -30,16 +30,18 @@ namespace HLVTimeSheet.Model.DeviceManager
 
         public async Task<List<DmEmployee>> GetAllEmployeesFromDeviceAsync(int page = 1, int limit = 200)
         {
+            // API trả về { "code": 200, "body": [...], "page": {...} } — không phải { "data": ... }
             var endpoint = $"employees/{_config.CustomerId}?page={page}&limit={limit}";
-            var result = await _client.GetAsync<ApiResponse<DmEmployeeListResponse>>(endpoint);
-            return result?.Data?.Employees ?? new List<DmEmployee>();
+            var result = await _client.GetAsync<ApiListResponse<DmEmployee>>(endpoint);
+            return result?.Body ?? new List<DmEmployee>();
         }
 
         public async Task<DmEmployee> GetEmployeeFromDeviceAsync(string employeeCode)
         {
+            // API trả về { "code": 200, "body": { employee } }
             var endpoint = $"employees/{_config.CustomerId}/{employeeCode}";
-            var result = await _client.GetAsync<ApiResponse<DmEmployee>>(endpoint);
-            return result?.Data;
+            var result = await _client.GetAsync<ApiListResponse<DmEmployee>>(endpoint);
+            return result?.Body?.Count > 0 ? result.Body[0] : null;
         }
 
         // ─── Đăng ký khuôn mặt ───────────────────────────────────────────────────

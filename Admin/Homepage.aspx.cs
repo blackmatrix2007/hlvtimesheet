@@ -35,6 +35,8 @@ namespace HLVTimeSheet.Admin
         public string roleDW = "";
         public string roleJisseki = "";
         public string roleTimeSheet = "";
+        public string roleDevice = "1";         // DeviceManager - luôn hiển thị cho admin
+        public string hlvDeviceManager = "Máy chấm công";
         public string yearNow = "";
         public string token = "";
         protected void Page_Load(object sender, EventArgs e)
