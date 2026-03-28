@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeFile="DeviceSync.aspx.cs" Inherits="HLVTimeSheet.Admin.DeviceSync" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeFile="DeviceSync.aspx.cs" Inherits="HLVTimeSheet.Admin.DeviceSync" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
