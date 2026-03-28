@@ -125,18 +125,18 @@ namespace HLVTimeSheet.Model.DeviceManager
 
                 // Giờ vào = check_in đầu tiên hợp lệ
                 // Giờ ra  = check_out cuối cùng hợp lệ
-                // JOIN DanhSachNhanSu để lấy pk_seq (nhansuFk) và pk_phongban (phongbanFk)
+                // JOIN DanhSachNhanSu để lấy pk_seq (nhansuFk) và phongban_fk (phongbanFk)
                 const string sql = @"
                     SELECT
                         cd.mapNV,
                         ns.pk_seq                                                           AS nhansuFk,
-                        ISNULL(CAST(ns.pk_phongban AS NVARCHAR(50)), '')                    AS phongbanFk,
+                        ISNULL(CAST(ns.phongban_fk AS NVARCHAR(50)), '')                    AS phongbanFk,
                         MIN(CASE WHEN cd.loai='check_in'  AND cd.isValid=1 THEN cd.thoiGian END) AS gioVao,
                         MAX(CASE WHEN cd.loai='check_out' AND cd.isValid=1 THEN cd.thoiGian END) AS gioRa
                     FROM ChamCong_Device cd
-                    LEFT JOIN DanhSachNhanSu ns ON ns.mapNV = cd.mapNV AND ns.trangThai = 1
+                    LEFT JOIN DanhSachNhanSu ns ON ns.ma = cd.mapNV AND ns.trangthai = 1
                     WHERE CAST(cd.thoiGian AS DATE) = @ngay
-                    GROUP BY cd.mapNV, ns.pk_seq, ns.pk_phongban
+                    GROUP BY cd.mapNV, ns.pk_seq, ns.phongban_fk
                     ORDER BY cd.mapNV";
 
                 using (var cmd = new SqlCommand(sql, sqlConn))
