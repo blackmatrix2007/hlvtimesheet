@@ -120,12 +120,12 @@ namespace HLVTimeSheet.Model.DeviceManager
                 sqlConn.Open();
                 const string sql = @"
                     SELECT
-                        ns.ma           AS mapNV,
-                        ns.ten          AS hoTen,
-                        pb.ten          AS phongBan,
-                        ns.chucVu       AS chucVu,
-                        ns.mail         AS email,
-                        ns.dienthoai    AS dienThoai
+                        ns.ma                                                                   AS mapNV,
+                        ns.ten                                                                  AS hoTen,
+                        ISNULL(pb.ten, '')                                                      AS phongBan,
+                        ISNULL((SELECT cv.ten FROM ChucVu cv WHERE cv.pk_seq = ns.chucvu_fk),'') AS chucVu,
+                        ISNULL(ns.mail, '')                                                     AS email,
+                        ISNULL(ns.dienthoai, '')                                                AS dienThoai
                     FROM DanhSachNhanSu ns
                     LEFT JOIN PhongBan pb ON pb.pk_seq = ns.phongban_fk
                     WHERE ns.trangthai = 1
