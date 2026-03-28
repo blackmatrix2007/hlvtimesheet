@@ -114,6 +114,24 @@ namespace HLVTimeSheet.Admin
         protected global::System.Web.UI.WebControls.Label lblImportResult;
 
         /// <summary>
+        /// btnCheckMapping control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnCheckMapping;
+
+        /// <summary>
+        /// litMapping control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMapping;
+
+        /// <summary>
         /// btnListEmp control.
         /// </summary>
         /// <remarks>
