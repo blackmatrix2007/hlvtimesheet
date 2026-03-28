@@ -138,6 +138,41 @@ namespace HLVTimeSheet.Admin
             }
         }
 
+        // ─── Debug: Kiểm tra mapping mã NV ──────────────────────────────────────
+
+        protected void BtnCheckMapping_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var svc = new DeviceAttendanceImportService();
+                var rows = svc.GetMappingDebug();
+
+                var sb = new StringBuilder();
+                sb.Append("<table class='table table-sm table-bordered'>");
+                sb.Append("<tr><th>Mã trong ChamCong_Device</th><th>Tìm thấy trong DanhSachNhanSu?</th><th>Tên</th><th>Phòng ban</th><th>Trạng thái</th></tr>");
+                foreach (System.Data.DataRow row in rows.Rows)
+                {
+                    bool found = !string.IsNullOrEmpty(row["pk_seq"].ToString());
+                    sb.AppendFormat(
+                        "<tr><td><strong>{0}</strong></td>" +
+                        "<td><span class='badge-{1}'>{2}</span></td>" +
+                        "<td>{3}</td><td>{4}</td><td>{5}</td></tr>",
+                        HttpUtility.HtmlEncode(row["mapNV"].ToString()),
+                        found ? "success" : "danger",
+                        found ? "Khớp" : "Không tìm thấy",
+                        HttpUtility.HtmlEncode(row["ten"].ToString()),
+                        HttpUtility.HtmlEncode(row["phongban"].ToString()),
+                        HttpUtility.HtmlEncode(row["trangthai"].ToString()));
+                }
+                sb.Append("</table>");
+                litMapping.Text = sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                litMapping.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
+            }
+        }
+
         // ─── Danh sách nhân viên ─────────────────────────────────────────────────
 
         protected void BtnListEmp_Click(object sender, EventArgs e)
