@@ -52,6 +52,23 @@
         <asp:Literal ID="litToday" runat="server" />
     </div>
 
+    <!-- Import vào bảng công HLVTimeSheet -->
+    <div class="card">
+        <h6>Import vào bảng công HLVTimeSheet (ChamCong)</h6>
+        <p class="text-muted mb-2" style="font-size:.85em">
+            Đọc giờ vào/ra từ <code>ChamCong_Device</code> và ghi vào bảng <code>ChamCong / ChamCong_ChiTiet</code>.
+        </p>
+        <div class="form-inline mb-2">
+            <label class="mr-2">Từ ngày:</label>
+            <asp:TextBox ID="txtImportFrom" runat="server" CssClass="form-control mr-3" TextMode="Date" />
+            <label class="mr-2">Đến ngày:</label>
+            <asp:TextBox ID="txtImportTo" runat="server" CssClass="form-control mr-3" TextMode="Date" />
+            <asp:Button ID="btnImport" runat="server" Text="Import vào bảng công"
+                        CssClass="btn btn-success" OnClick="BtnImport_Click" />
+        </div>
+        <asp:Label ID="lblImportResult" runat="server" />
+    </div>
+
     <!-- Nhân viên đã đăng ký khuôn mặt -->
     <div class="card">
         <h6>Nhân viên đã đăng ký khuôn mặt trên DeviceManager</h6>

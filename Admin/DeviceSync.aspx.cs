@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using HLVTimeSheet.Model.DeviceManager;
+using System.Web.UI.WebControls;
 
 namespace HLVTimeSheet.Admin
 {
@@ -13,8 +14,10 @@ namespace HLVTimeSheet.Admin
         {
             if (!IsPostBack)
             {
-                txtFrom.Text = DateTime.Today.ToString("yyyy-MM-dd");
-                txtTo.Text   = DateTime.Today.ToString("yyyy-MM-dd");
+                txtFrom.Text       = DateTime.Today.ToString("yyyy-MM-dd");
+                txtTo.Text         = DateTime.Today.ToString("yyyy-MM-dd");
+                txtImportFrom.Text = DateTime.Today.ToString("yyyy-MM-dd");
+                txtImportTo.Text   = DateTime.Today.ToString("yyyy-MM-dd");
 
                 // Hiển thị URL webhook để admin copy vào DeviceManager
                 var baseUrl = $"{Request.Scheme}://{Request.Url.Authority}";
@@ -42,6 +45,47 @@ namespace HLVTimeSheet.Admin
             catch (Exception ex)
             {
                 lblPullResult.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
+            }
+        }
+
+        // ─── Import vào bảng công ────────────────────────────────────────────────
+
+        protected void BtnImport_Click(object sender, EventArgs e)
+        {
+            if (!DateTime.TryParse(txtImportFrom.Text, out DateTime tuNgay) ||
+                !DateTime.TryParse(txtImportTo.Text,   out DateTime denNgay))
+            {
+                lblImportResult.Text = "<div class='alert alert-warning'>Ngày không hợp lệ.</div>";
+                return;
+            }
+
+            try
+            {
+                var svc    = new DeviceAttendanceImportService();
+                var result = svc.ImportRange(tuNgay, denNgay, nguoiTao: "device-import");
+
+                var sb = new StringBuilder();
+                sb.AppendFormat(
+                    "<div class='alert alert-{0}'>" +
+                    "Đã xử lý <strong>{1}</strong> bản ghi — " +
+                    "Thành công: <strong>{2}</strong> — " +
+                    "Bỏ qua (NV không tồn tại): <strong>{3}</strong>",
+                    result.Errors.Count == 0 ? "success" : "warning",
+                    result.Processed, result.Succeeded, result.Skipped);
+
+                if (result.Errors.Count > 0)
+                {
+                    sb.Append("<ul class='mt-2 mb-0'>");
+                    foreach (var err in result.Errors)
+                        sb.AppendFormat("<li>{0}</li>", HttpUtility.HtmlEncode(err));
+                    sb.Append("</ul>");
+                }
+                sb.Append("</div>");
+                lblImportResult.Text = sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                lblImportResult.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
             }
         }
 

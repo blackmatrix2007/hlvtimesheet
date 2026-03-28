@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using HLVTimeSheet.AcsessData;
+using System.Configuration;
 
 namespace HLVTimeSheet.Model.DeviceManager
 {
@@ -73,18 +74,54 @@ namespace HLVTimeSheet.Model.DeviceManager
             if (!laVao && dto.Event != "attendance.checkout")
                 return new WebhookResult { Success = false, Message = $"Event '{dto.Event}' không được hỗ trợ." };
 
-            // 4. Ghi vào SQL Server
+            // 4. Ghi vào SQL Server + validate + alert
             var conn = new ConnectionDatabase();
             using (var sqlConn = new SqlConnection(conn.ReturnConnectionDatabaseWS()))
             {
                 sqlConn.Open();
                 EnsureTableExists(sqlConn);
 
-                int attemptNo = GetNextAttemptNumber(sqlConn, dto.EmployeeCode, thoiGian.Date);
-                bool isDuplicate = attemptNo > 1;
+                // ── Validate: mapNV phải tồn tại trong DanhSachNhanSu ─────────────
+                bool employeeExists = EmployeeExistsInDb(sqlConn, dto.EmployeeCode);
+                if (!employeeExists)
+                {
+                    // Ghi vào DB (audit) nhưng đánh isValid=false
+                    InsertAttendanceLog(sqlConn, new ChamCongDeviceRecord
+                    {
+                        MapNV           = dto.EmployeeCode,
+                        Loai            = laVao ? "check_in" : "check_out",
+                        ThoiGian        = thoiGian,
+                        DeviceId        = dto.DeviceId?.ToString(),
+                        DeviceName      = dto.DeviceName,
+                        DiemTin         = dto.FaceConfidence,
+                        Latitude        = dto.Latitude,
+                        Longitude       = dto.Longitude,
+                        GpsAccuracy     = dto.GpsAccuracy,
+                        IsValid         = false,
+                        IsDuplicate     = false,
+                        AttemptNumber   = 1,
+                        RejectionReason = "Mã nhân viên không tồn tại trong HLVTimeSheet",
+                        Source          = dto.Source ?? "device-manager",
+                    });
 
-                // Kiểm tra nếu đã có bản ghi hợp lệ cùng loại → đánh dấu duplicate
-                bool isValid = !isDuplicate;
+                    // Gửi cảnh báo (fire-and-forget)
+                    var alert = new AlertService();
+                    Task.Run(async () => await alert.AlertUnknownEmployeeAsync(
+                        dto.EmployeeCode, dto.DeviceName ?? "", thoiGian));
+
+                    return new WebhookResult
+                    {
+                        Success         = true, // trả 200 để DeviceManager không retry
+                        Message         = $"Mã nhân viên '{dto.EmployeeCode}' không tồn tại — đã ghi audit.",
+                        IsValid         = false,
+                        RejectionReason = "Mã nhân viên không tồn tại trong HLVTimeSheet",
+                    };
+                }
+
+                // ── Duplicate check ───────────────────────────────────────────────
+                int attemptNo = GetNextAttemptNumber(sqlConn, dto.EmployeeCode, thoiGian.Date);
+                bool isDuplicate     = attemptNo > 1;
+                bool isValid         = !isDuplicate;
                 string rejectionReason = isDuplicate ? "Chấm công trùng lặp trong ngày" : null;
 
                 int id = InsertAttendanceLog(sqlConn, new ChamCongDeviceRecord
@@ -104,6 +141,17 @@ namespace HLVTimeSheet.Model.DeviceManager
                     RejectionReason = rejectionReason,
                     Source          = dto.Source ?? "device-manager",
                 });
+
+                // ── Cảnh báo face confidence thấp ────────────────────────────────
+                double faceThreshold = GetFaceConfidenceThreshold();
+                if (dto.FaceConfidence.HasValue && dto.FaceConfidence.Value < faceThreshold)
+                {
+                    var alert = new AlertService();
+                    Task.Run(async () => await alert.AlertLowFaceConfidenceAsync(
+                        dto.EmployeeCode, thoiGian,
+                        dto.FaceConfidence.Value, faceThreshold,
+                        dto.DeviceName ?? ""));
+                }
 
                 return new WebhookResult
                 {
@@ -212,6 +260,51 @@ namespace HLVTimeSheet.Model.DeviceManager
         // ═══════════════════════════════════════════════════════════════════════════
         // Private helpers
         // ═══════════════════════════════════════════════════════════════════════════
+
+        // ── Validate nhân viên có trong DanhSachNhanSu không ────────────────────
+
+        private static bool EmployeeExistsInDb(SqlConnection conn, string mapNV)
+        {
+            const string sql = @"
+                SELECT COUNT(1) FROM DanhSachNhanSu
+                WHERE mapNV = @mapNV AND trangThai = 1";
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@mapNV", mapNV);
+                return (int)cmd.ExecuteScalar() > 0;
+            }
+        }
+
+        // ── Đọc ngưỡng face confidence từ DB settings ───────────────────────────
+
+        private static double GetFaceConfidenceThreshold()
+        {
+            try
+            {
+                var dbConn = new ConnectionDatabase();
+                using (var sqlConn = new SqlConnection(dbConn.ReturnConnectionDatabaseWS()))
+                {
+                    sqlConn.Open();
+                    const string sql = @"
+                        SELECT TOP 1 faceConfidenceThreshold
+                        FROM DeviceManagerSettings
+                        WHERE laDinhChinh = 1 AND dangHoatDong = 1";
+                    using (var cmd = new SqlCommand(sql, sqlConn))
+                    {
+                        var val = cmd.ExecuteScalar();
+                        if (val != null && val != DBNull.Value)
+                            return Convert.ToDouble(val);
+                    }
+                }
+            }
+            catch { }
+            // Fallback: Web.config hoặc giá trị mặc định 0.6
+            if (double.TryParse(
+                    ConfigurationManager.AppSettings["DeviceManager_FaceThreshold"],
+                    out double cfg))
+                return cfg;
+            return 0.6;
+        }
 
         private bool VerifySignature(WebhookAttendanceDto dto)
         {

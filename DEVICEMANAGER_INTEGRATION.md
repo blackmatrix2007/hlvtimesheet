@@ -284,13 +284,35 @@ Events:         attendance.checkin, attendance.checkout
 
 ---
 
-## Điểm còn thiếu / cần làm tiếp
+## Cấu trúc file đầy đủ
 
-| Hạng mục | Trạng thái | Ghi chú |
-|----------|-----------|---------|
-| UI upload ảnh khuôn mặt nhân viên | ❌ Chưa có | Cần trang cho HR upload ảnh từng NV |
-| UI cấu hình DeviceManagerSettings | ❌ Chưa có | Hiện phải INSERT thẳng vào DB |
-| Nối `TimeKeepingController` ← `ChamCong_Device` | ❌ Chưa nối | Cần gọi `GetDailyCheckInOut()` khi lập bảng công |
-| Kiểm tra `mapNV` tồn tại trong `DanhSachNhanSu` | ❌ Chưa có | Webhook chưa validate NV có trong HLV không |
-| Thông báo chấm công bất thường | ❌ Chưa có | face confidence thấp, GPS ngoài vùng |
-| Geofence validation | ❌ Chưa có | Kiểm tra latitude/longitude trong bán kính cho phép |
+```
+HLVTimeSheet/
+├── Model/DeviceManager/
+│   ├── DeviceManagerConfig.cs              ← Load config DB → Web.config fallback
+│   ├── DeviceManagerApiClient.cs           ← HTTP client X-API-Key
+│   ├── DeviceManagerModels.cs              ← DTOs
+│   ├── EmployeeSyncService.cs              ← Đăng ký / xóa khuôn mặt nhân viên
+│   ├── AttendanceSyncService.cs            ← Webhook PUSH + PULL + validate + alert
+│   ├── DeviceAttendanceImportService.cs    ← Import ChamCong_Device → ChamCong
+│   └── AlertService.cs                     ← Gửi email cảnh báo bất thường
+│
+├── Admin/Hander/
+│   └── hdAttendanceWebhook.ashx[.cs]       ← Nhận webhook PUSH từ DeviceManager
+│
+└── Admin/
+    ├── DeviceFaceRegister.aspx[.cs]        ← Upload ảnh khuôn mặt nhân viên
+    ├── DeviceSettings.aspx[.cs]            ← Cấu hình API + SMTP từ UI
+    └── DeviceSync.aspx[.cs]               ← Webhook URL, PULL, Import bảng công
+```
+
+## Tất cả tính năng đã hoàn thành
+
+| Hạng mục | Trạng thái |
+|----------|-----------|
+| UI upload ảnh khuôn mặt nhân viên | ✅ `DeviceFaceRegister.aspx` |
+| UI cấu hình DeviceManagerSettings | ✅ `DeviceSettings.aspx` |
+| Nối `TimeKeepingController` ← `ChamCong_Device` | ✅ `DeviceAttendanceImportService` + nút Import trong `DeviceSync.aspx` |
+| Kiểm tra `mapNV` tồn tại trong `DanhSachNhanSu` | ✅ `AttendanceSyncService.EmployeeExistsInDb()` |
+| Email cảnh báo face confidence thấp | ✅ `AlertService.AlertLowFaceConfidenceAsync()` |
+| Email cảnh báo mã NV không tồn tại | ✅ `AlertService.AlertUnknownEmployeeAsync()` |
