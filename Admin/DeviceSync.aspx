@@ -80,6 +80,15 @@
         <asp:Button ID="btnCheckMapping" runat="server" Text="Kiểm tra mapping"
                     CssClass="btn btn-sm btn-info mb-2" OnClick="BtnCheckMapping_Click" />
         <asp:Literal ID="litMapping" runat="server" />
+
+        <hr/>
+        <h6 class="mt-2">Danh sách nhân viên trong DanhSachNhanSu (mã <code>ma</code>)</h6>
+        <p class="text-muted mb-2" style="font-size:.85em">
+            Mã NV trên DeviceManager phải trùng với cột <code>ma</code> bên dưới.
+        </p>
+        <asp:Button ID="btnShowHlvStaff" runat="server" Text="Xem danh sách nhân viên HLV"
+                    CssClass="btn btn-sm btn-secondary mb-2" OnClick="BtnShowHlvStaff_Click" />
+        <asp:Literal ID="litHlvStaff" runat="server" />
     </div>
 
     <!-- Nhân viên đã đăng ký khuôn mặt -->

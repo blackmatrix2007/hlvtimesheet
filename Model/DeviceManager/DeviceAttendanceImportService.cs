@@ -148,6 +148,35 @@ namespace HLVTimeSheet.Model.DeviceManager
             }
         }
 
+        /// <summary>
+        /// Trả về danh sách nhân viên trong DanhSachNhanSu để đối chiếu với mã DeviceManager.
+        /// </summary>
+        public DataTable GetHlvStaffList()
+        {
+            var conn = new ConnectionDatabase();
+            using (var sqlConn = new System.Data.SqlClient.SqlConnection(conn.ReturnConnectionDatabaseWS()))
+            {
+                sqlConn.Open();
+                const string sql = @"
+                    SELECT
+                        ns.ma,
+                        ns.ten,
+                        ISNULL((SELECT pb.ten FROM PhongBan pb WHERE pb.pk_seq = ns.phongban_fk), '') AS phongban,
+                        ns.trangthai
+                    FROM DanhSachNhanSu ns
+                    WHERE ns.trangthai = 1
+                    ORDER BY ns.ma";
+
+                using (var cmd = new System.Data.SqlClient.SqlCommand(sql, sqlConn))
+                using (var adapter = new System.Data.SqlClient.SqlDataAdapter(cmd))
+                {
+                    var dt = new DataTable();
+                    adapter.Fill(dt);
+                    return dt;
+                }
+            }
+        }
+
         // ─── Private: Đọc ChamCong_Device + join DanhSachNhanSu ─────────────────
 
         private static DataTable GetDailyCheckInOutFromDevice(DateTime ngay)
