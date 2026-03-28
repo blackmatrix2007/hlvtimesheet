@@ -120,16 +120,16 @@ namespace HLVTimeSheet.Model.DeviceManager
                 sqlConn.Open();
                 const string sql = @"
                     SELECT
-                        ns.mapNV        AS mapNV,
-                        ns.hoTen        AS hoTen,
-                        pb.TenPhongBan  AS phongBan,
+                        ns.ma           AS mapNV,
+                        ns.ten          AS hoTen,
+                        pb.ten          AS phongBan,
                         ns.chucVu       AS chucVu,
-                        ns.email        AS email,
-                        ns.dienThoai    AS dienThoai
+                        ns.mail         AS email,
+                        ns.dienthoai    AS dienThoai
                     FROM DanhSachNhanSu ns
-                    LEFT JOIN PhongBan pb ON pb.pk_seq = ns.pk_phongban
-                    WHERE ns.trangThai = 1
-                    ORDER BY ns.mapNV";
+                    LEFT JOIN PhongBan pb ON pb.pk_seq = ns.phongban_fk
+                    WHERE ns.trangthai = 1
+                    ORDER BY ns.ma";
 
                 using (var cmd = new SqlCommand(sql, sqlConn))
                 using (var adapter = new SqlDataAdapter(cmd))
