@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Web;
 
@@ -33,6 +34,8 @@ namespace HLVTimeSheet.Admin.Hander
                 req.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
                 req.Headers["x-api-key"] = API_KEY;
 
+                Debug.WriteLine($"[hdFaceImage] GET {url}");
+
                 HttpWebResponse resp;
                 try
                 {
@@ -42,11 +45,14 @@ namespace HLVTimeSheet.Admin.Hander
                 {
                     var errResp = wex.Response as HttpWebResponse;
                     int code = errResp != null ? (int)errResp.StatusCode : 502;
+                    Debug.WriteLine($"[hdFaceImage] Upstream {code}: {wex.Message} | path={path}");
                     context.Response.StatusCode  = code;
                     context.Response.ContentType = "text/plain";
                     context.Response.Write("Upstream " + code + ": " + wex.Message);
                     return;
                 }
+
+                Debug.WriteLine($"[hdFaceImage] Upstream {(int)resp.StatusCode} {resp.ContentType} | path={path}");
 
                 using (resp)
                 using (var stream = resp.GetResponseStream())
