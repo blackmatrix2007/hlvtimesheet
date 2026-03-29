@@ -28,10 +28,11 @@ namespace HLVTimeSheet.Admin.Hander
             {
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 var req = (HttpWebRequest)WebRequest.Create(url);
-                req.Method  = "GET";
-                req.Timeout = 15000;
+                req.Method   = "GET";
+                req.Timeout  = 15000;
+                req.Referer  = "https://hcm.erp-x.com/";
                 req.Headers["x-api-key"] = API_KEY;
-                req.UserAgent = "HLVTimeSheet/1.0";
+                req.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 
                 HttpWebResponse resp;
                 try
