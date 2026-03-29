@@ -15,6 +15,7 @@
     </style>
 </head>
 <body>
+<form id="form1" runat="server">
 <div class="container-fluid">
     <h4 class="mb-3">Đăng ký khuôn mặt nhân viên — DeviceManager</h4>
 
@@ -49,6 +50,7 @@
         <asp:Literal ID="litList" runat="server" />
     </div>
 </div>
+</form>
 
 <script src="../Scripts/jquery-3.6.0.min.js"></script>
 <script src="../Content/bootstrap/js/bootstrap.min.js"></script>
