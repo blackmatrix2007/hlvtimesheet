@@ -212,7 +212,9 @@ namespace HLVTimeSheet.Admin
                 if (!string.IsNullOrEmpty(imgUrl) && imgUrl.StartsWith("/"))
                 {
                     Debug.WriteLine($"[DeviceFaceRegister]   proxy img [{code}]: {imgUrl}");
-                    imgUrl = "/Admin/Hander/hdFaceImage.ashx?path=" + HttpUtility.UrlEncode(imgUrl);
+                    // thêm v= để tránh browser cache lần 500 cũ
+                    imgUrl = "/Admin/Hander/hdFaceImage.ashx?path=" + HttpUtility.UrlEncode(imgUrl)
+                           + "&v=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 }
 
                 string faceCell = hasface
