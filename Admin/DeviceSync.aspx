@@ -93,7 +93,10 @@
 
     <!-- Nhân viên đã đăng ký khuôn mặt -->
     <div class="card">
-        <h6>Nhân viên đã đăng ký khuôn mặt trên DeviceManager</h6>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Nhân viên đã đăng ký khuôn mặt trên DeviceManager</h6>
+            <a href="DeviceFaceRegister.aspx" class="btn btn-sm btn-primary">&#128247; Quản lý khuôn mặt</a>
+        </div>
         <asp:Button ID="btnListEmp" runat="server" Text="Tải danh sách"
                     CssClass="btn btn-sm btn-secondary mb-2" OnClick="BtnListEmp_Click" />
         <asp:Literal ID="litEmployees" runat="server" />
