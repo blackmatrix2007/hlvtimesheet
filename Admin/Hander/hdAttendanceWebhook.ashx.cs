@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Web;
 using HLVTimeSheet.Model.DeviceManager;
@@ -35,12 +36,14 @@ namespace HLVTimeSheet.Admin.Hander
 
         public void ProcessRequest(HttpContext context)
         {
+            Debug.WriteLine($"[Webhook] {DateTime.Now:HH:mm:ss} {context.Request.HttpMethod} {context.Request.Url}");
             context.Response.ContentType = "application/json";
             context.Response.Expires     = -1;
 
             // Chỉ cho phép POST
             if (!context.Request.HttpMethod.Equals("POST", StringComparison.OrdinalIgnoreCase))
             {
+                Debug.WriteLine("[Webhook] 405 Method Not Allowed");
                 context.Response.StatusCode = 405;
                 context.Response.Write(Json(new { success = false, message = "Method Not Allowed" }));
                 return;
@@ -52,9 +55,11 @@ namespace HLVTimeSheet.Admin.Hander
             {
                 using (var reader = new StreamReader(context.Request.InputStream))
                     body = reader.ReadToEnd();
+                Debug.WriteLine($"[Webhook] Body: {body}");
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[Webhook] Đọc body lỗi: {ex.Message}");
                 context.Response.StatusCode = 400;
                 context.Response.Write(Json(new { success = false, message = "Không đọc được body: " + ex.Message }));
                 return;
@@ -65,9 +70,11 @@ namespace HLVTimeSheet.Admin.Hander
             try
             {
                 dto = JsonConvert.DeserializeObject<WebhookAttendanceDto>(body);
+                Debug.WriteLine($"[Webhook] Parsed: event={dto?.Event}, employeeCode={dto?.EmployeeCode}, checkingTime={dto?.CheckingTime}");
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[Webhook] JSON parse lỗi: {ex.Message}");
                 context.Response.StatusCode = 400;
                 context.Response.Write(Json(new { success = false, message = "JSON không hợp lệ: " + ex.Message }));
                 return;
@@ -76,6 +83,7 @@ namespace HLVTimeSheet.Admin.Hander
             // Validate bắt buộc
             if (dto == null || string.IsNullOrEmpty(dto.EmployeeCode) || string.IsNullOrEmpty(dto.CheckingTime))
             {
+                Debug.WriteLine("[Webhook] 400 Thiếu employeeCode hoặc checkingTime");
                 context.Response.StatusCode = 400;
                 context.Response.Write(Json(new { success = false, message = "employeeCode và checkingTime là bắt buộc." }));
                 return;
@@ -83,6 +91,7 @@ namespace HLVTimeSheet.Admin.Hander
 
             if (dto.Event != "attendance.checkin" && dto.Event != "attendance.checkout")
             {
+                Debug.WriteLine($"[Webhook] 400 Event không hỗ trợ: {dto.Event}");
                 context.Response.StatusCode = 400;
                 context.Response.Write(Json(new { success = false, message = $"event '{dto.Event}' không được hỗ trợ." }));
                 return;
@@ -95,6 +104,7 @@ namespace HLVTimeSheet.Admin.Hander
                 var result = svc.ProcessWebhook(dto);
 
                 int statusCode = result.Success ? 200 : 422;
+                Debug.WriteLine($"[Webhook] Result: success={result.Success}, recordId={result.RecordId}, isValid={result.IsValid}, msg={result.Message}");
                 context.Response.StatusCode = statusCode;
                 context.Response.Write(Json(new
                 {
@@ -107,6 +117,7 @@ namespace HLVTimeSheet.Admin.Hander
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[Webhook] EXCEPTION: {ex.Message}\n{ex.StackTrace}");
                 // Trả 500 để DeviceManager tự retry
                 context.Response.StatusCode = 500;
                 context.Response.Write(Json(new
