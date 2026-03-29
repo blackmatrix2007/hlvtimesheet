@@ -181,6 +181,7 @@ namespace HLVTimeSheet.Model
                     Debug.WriteLine($"[TimeKeeping] INSERT new ChamCong: ngay={ngaynhap}, phongban={phongban_fk}, nhansu={nhansu_fk}");
                     sql = "INSERT ChamCong(ngaynhap, phongban_fk, nhansu_fk, thoigianIn, thoigianOut, thang, nam, trangthai, nguoitao, nguoisua) " +
                     " SELECT N'" + ngaynhap + "', N'" + phongban_fk + "', N'" + nhansu_fk + "', N'', N'', '" + thang + "', N'" + nam + "', '" + trangthai + "', '" + nguoitao + "', '" + nguoitao + "' ";
+                    Debug.WriteLine($"[TimeKeeping] SQL ChamCong: {sql}");
                     command.CommandTimeout = int.MaxValue;
                     command.CommandText = sql;
                     kq = command.ExecuteNonQuery();
