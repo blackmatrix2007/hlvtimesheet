@@ -141,6 +141,14 @@ namespace HLVTimeSheet.Admin
         /// </summary>
         protected global::System.Web.UI.WebControls.Literal litHlvStaff;
 
+        protected global::System.Web.UI.WebControls.TextBox txtViewFrom;
+
+        protected global::System.Web.UI.WebControls.TextBox txtViewTo;
+
+        protected global::System.Web.UI.WebControls.Button btnViewLogs;
+
+        protected global::System.Web.UI.WebControls.Literal litViewLogs;
+
         /// <summary>
         /// btnListEmp control.
         /// </summary>
