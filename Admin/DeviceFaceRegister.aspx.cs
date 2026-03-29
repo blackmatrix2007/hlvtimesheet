@@ -200,9 +200,9 @@ namespace HLVTimeSheet.Admin
                 string code    = row["mapNV"].ToString();
                 bool   hasface = registered.Contains(code);
                 string imgUrl  = hasface && faceUrls.TryGetValue(code, out string u) ? u : "";
-                // faceImageUrl từ API là relative path → prepend base URL DeviceManager
+                // faceImageUrl là relative path → proxy qua handler nội bộ (cần API key)
                 if (!string.IsNullOrEmpty(imgUrl) && imgUrl.StartsWith("/"))
-                    imgUrl = "https://device.erp-x.com" + imgUrl;
+                    imgUrl = "/Admin/Hander/hdFaceImage.ashx?path=" + HttpUtility.UrlEncode(imgUrl);
 
                 string faceCell = hasface
                     ? (string.IsNullOrEmpty(imgUrl)
