@@ -19,6 +19,36 @@ namespace HLVTimeSheet.Model.DeviceManager
         public string Message { get; set; }
     }
 
+    // ─── Response đăng ký khuôn mặt ──────────────────────────────────────────────
+    // Dạng: { "employee": {...}, "faceVerification": {...}, "message": "..." }
+    // KHÔNG có field "success"
+
+    public class RegisterFaceResponse
+    {
+        [JsonProperty("employee")]
+        public DmEmployee Employee { get; set; }
+
+        [JsonProperty("message")]
+        public string Message { get; set; }
+
+        [JsonProperty("duplicates")]
+        public List<DuplicateFace> Duplicates { get; set; }
+
+        public bool IsSuccess => Employee != null;
+    }
+
+    public class DuplicateFace
+    {
+        [JsonProperty("employeeCode")]
+        public string EmployeeCode { get; set; }
+
+        [JsonProperty("fullName")]
+        public string FullName { get; set; }
+
+        [JsonProperty("similarity")]
+        public string Similarity { get; set; }
+    }
+
     // ─── API Response wrapper (danh sách nhân viên) ───────────────────────────────
     // Dạng: { "code": 200, "message": "Success", "body": [...], "page": { ... } }
 

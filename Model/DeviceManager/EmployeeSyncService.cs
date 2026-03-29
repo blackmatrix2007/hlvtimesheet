@@ -50,7 +50,7 @@ namespace HLVTimeSheet.Model.DeviceManager
         /// Đăng ký ảnh khuôn mặt nhân viên lên DeviceManager.
         /// Tương đương registerFace() trong device-manager.service.ts.
         /// </summary>
-        public async Task<ApiResponse<DmEmployee>> RegisterEmployeeFaceAsync(
+        public async Task<RegisterFaceResponse> RegisterEmployeeFaceAsync(
             string employeeCode,
             string fullName,
             byte[] faceImageBytes,
@@ -80,7 +80,7 @@ namespace HLVTimeSheet.Model.DeviceManager
                 if (!string.IsNullOrEmpty(email))      form.Add(new StringContent(email),      "email");
                 if (!string.IsNullOrEmpty(phone))      form.Add(new StringContent(phone),      "phone");
 
-                return await _client.PostMultipartAsync<ApiResponse<DmEmployee>>(endpoint, form);
+                return await _client.PostMultipartAsync<RegisterFaceResponse>(endpoint, form);
             }
         }
 

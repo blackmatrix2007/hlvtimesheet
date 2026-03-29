@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -99,21 +100,29 @@ namespace HLVTimeSheet.Admin
                         department, position)
                 ).GetAwaiter().GetResult();
 
-                if (result?.Success == true)
+                WriteLog($"RegisterFace [{employeeCode}]: IsSuccess={result?.IsSuccess}, Message={result?.Message}, Duplicates={result?.Duplicates?.Count ?? 0}");
+
+                if (result?.IsSuccess == true)
                 {
                     lblResult.Text = Alert("success",
                         $"Đã đăng ký khuôn mặt cho <strong>{HttpUtility.HtmlEncode(fullName)}</strong> ({employeeCode}) thành công.");
-                    // Refresh danh sách
                     Task.Run(async () => await RenderListAsync()).GetAwaiter().GetResult();
+                }
+                else if (result?.Duplicates?.Count > 0)
+                {
+                    var dup = result.Duplicates[0];
+                    lblResult.Text = Alert("warning",
+                        $"Ảnh trùng với nhân viên đã đăng ký: <strong>{HttpUtility.HtmlEncode(dup.FullName)}</strong> ({HttpUtility.HtmlEncode(dup.EmployeeCode)}) — độ tương đồng {HttpUtility.HtmlEncode(dup.Similarity)}. Vui lòng dùng ảnh khác.");
                 }
                 else
                 {
                     lblResult.Text = Alert("danger",
-                        $"DeviceManager trả về lỗi: {HttpUtility.HtmlEncode(result?.Message ?? "Không rõ")}");
+                        $"DeviceManager: {HttpUtility.HtmlEncode(result?.Message ?? "Không rõ")}");
                 }
             }
             catch (Exception ex)
             {
+                WriteLog($"RegisterFace EXCEPTION [{employeeCode}]: {ex}");
                 lblResult.Text = Alert("danger", $"Lỗi kết nối DeviceManager: {HttpUtility.HtmlEncode(ex.Message)}");
             }
         }
@@ -216,5 +225,18 @@ namespace HLVTimeSheet.Admin
 
         private static string Alert(string type, string msg)
             => $"<div class='alert alert-{type} mt-2'>{msg}</div>";
+
+        private void WriteLog(string message)
+        {
+            try
+            {
+                string logDir  = Server.MapPath("~/App_Data/logs");
+                if (!Directory.Exists(logDir)) Directory.CreateDirectory(logDir);
+                string logFile = Path.Combine(logDir, $"device_{DateTime.Today:yyyyMMdd}.log");
+                string line    = $"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}";
+                File.AppendAllText(logFile, line, Encoding.UTF8);
+            }
+            catch { /* không để log lỗi làm crash app */ }
+        }
     }
 }
