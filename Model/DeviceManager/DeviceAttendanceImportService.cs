@@ -78,8 +78,8 @@ namespace HLVTimeSheet.Model.DeviceManager
                     phutOut = gr.Minute.ToString("D2");
                 }
 
-                // Ngày dạng dd/MM/yyyy (đúng format INSERT_TimeKeeping_New)
-                string ngayStr = ngay.ToString("dd/MM/yyyy");
+                // Ngày dạng dd-MM-yyyy (format lưu trong ChamCong)
+                string ngayStr = ngay.ToString("dd-MM-yyyy");
 
                 if (string.IsNullOrEmpty(phongbanFk) || phongbanFk == "0")
                 {

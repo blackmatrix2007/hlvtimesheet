@@ -138,8 +138,8 @@ namespace HLVTimeSheet.Model
             int kq = 0;
             bool flag = false;
 
-            // Parse thang/nam từ ngaynhap (dd/MM/yyyy) để INSERT ChamCong
-            if (DateTime.TryParseExact(ngaynhap, "dd/MM/yyyy",
+            // Parse thang/nam từ ngaynhap (dd-MM-yyyy) để INSERT ChamCong
+            if (DateTime.TryParseExact(ngaynhap, "dd-MM-yyyy",
                 System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.None, out DateTime ngayParsed))
             {
