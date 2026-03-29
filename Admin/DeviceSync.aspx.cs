@@ -61,8 +61,9 @@ namespace HLVTimeSheet.Admin
 
             try
             {
+                string userId = Session["userId"]?.ToString() ?? "1";
                 var svc    = new DeviceAttendanceImportService();
-                var result = svc.ImportRange(tuNgay, denNgay, nguoiTao: "device-import");
+                var result = svc.ImportRange(tuNgay, denNgay, nguoiTao: userId);
 
                 var sb = new StringBuilder();
                 sb.AppendFormat(
