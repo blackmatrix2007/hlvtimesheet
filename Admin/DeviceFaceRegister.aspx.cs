@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -100,7 +101,9 @@ namespace HLVTimeSheet.Admin
                         department, position)
                 ).GetAwaiter().GetResult();
 
-                WriteLog($"RegisterFace [{employeeCode}]: IsSuccess={result?.IsSuccess}, Message={result?.Message}, Duplicates={result?.Duplicates?.Count ?? 0}");
+                var logMsg = $"RegisterFace [{employeeCode}]: IsSuccess={result?.IsSuccess}, Message={result?.Message}, Duplicates={result?.Duplicates?.Count ?? 0}";
+                WriteLog(logMsg);
+                Debug.WriteLine("[DeviceFaceRegister] " + logMsg);
 
                 if (result?.IsSuccess == true)
                 {
@@ -138,12 +141,17 @@ namespace HLVTimeSheet.Admin
             {
                 var svc = new EmployeeSyncService();
                 bool ok = Task.Run(async () => await svc.DeleteEmployeeAsync(code)).GetAwaiter().GetResult();
+                var logMsg = $"DeleteFace [{code}]: ok={ok}";
+                WriteLog(logMsg);
+                Debug.WriteLine("[DeviceFaceRegister] " + logMsg);
                 lblRemoveResult.Text = ok
                     ? Alert("success", $"Đã xóa khuôn mặt của <strong>{HttpUtility.HtmlEncode(code)}</strong> khỏi DeviceManager.")
                     : Alert("warning", $"DeviceManager không xác nhận xóa <strong>{HttpUtility.HtmlEncode(code)}</strong>.");
             }
             catch (Exception ex)
             {
+                WriteLog($"DeleteFace EXCEPTION [{code}]: {ex.Message}");
+                Debug.WriteLine($"[DeviceFaceRegister] DeleteFace EXCEPTION [{code}]: {ex.Message}");
                 lblRemoveResult.Text = Alert("danger", $"Lỗi: {HttpUtility.HtmlEncode(ex.Message)}");
             }
 

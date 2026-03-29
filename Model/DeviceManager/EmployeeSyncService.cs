@@ -94,7 +94,8 @@ namespace HLVTimeSheet.Model.DeviceManager
         {
             var endpoint = $"employees/{_config.CustomerId}/{employeeCode}";
             var result = await _client.DeleteAsync<ApiResponse<object>>(endpoint);
-            return result?.Success ?? false;
+            // API trả {"message":"Employee deleted successfully"} — không có "success"
+            return result?.Message?.Contains("deleted") == true || result?.Success == true;
         }
 
         // ─── Sync tất cả nhân viên tới một thiết bị ──────────────────────────────
