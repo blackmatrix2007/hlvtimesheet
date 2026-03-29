@@ -1,13 +1,13 @@
 using System;
 using System.Net;
 using System.Web;
-using HLVTimeSheet.Model.DeviceManager;
 
 namespace HLVTimeSheet.Admin.Hander
 {
     public class hdFaceImage : IHttpHandler
     {
         private const string BASE_URL = "https://device.erp-x.com";
+        private const string API_KEY  = "ck_a49fbf00754cc51f3b20d3eb719fffe6";
 
         public void ProcessRequest(HttpContext context)
         {
@@ -22,8 +22,6 @@ namespace HLVTimeSheet.Admin.Hander
                 return;
             }
 
-            // Load API key từ config (DB hoặc Web.config)
-            var cfg    = DeviceManagerConfig.Load();
             string url = BASE_URL + path;
 
             try
@@ -33,7 +31,7 @@ namespace HLVTimeSheet.Admin.Hander
                 req.Method    = "GET";
                 req.Timeout   = 15000;
                 req.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
-                req.Headers["x-api-key"] = cfg.ApiKey;
+                req.Headers["x-api-key"] = API_KEY;
 
                 HttpWebResponse resp;
                 try
@@ -46,7 +44,7 @@ namespace HLVTimeSheet.Admin.Hander
                     int code = errResp != null ? (int)errResp.StatusCode : 502;
                     context.Response.StatusCode  = code;
                     context.Response.ContentType = "text/plain";
-                    context.Response.Write($"Upstream {code}: {wex.Message}");
+                    context.Response.Write("Upstream " + code + ": " + wex.Message);
                     return;
                 }
 
