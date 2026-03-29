@@ -273,7 +273,7 @@ namespace HLVTimeSheet.Model.DeviceManager
         {
             const string sql = @"
                 SELECT COUNT(1) FROM DanhSachNhanSu
-                WHERE mapNV = @mapNV AND trangThai = 1";
+                WHERE ma = @mapNV AND trangthai = 1";
             using (var cmd = new SqlCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@mapNV", mapNV);
