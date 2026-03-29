@@ -31,6 +31,7 @@ namespace HLVTimeSheet.Admin
 
             var svc = new EmployeeSyncService();
             DataTable dt = svc.GetActiveEmployeesFromDb();
+            Debug.WriteLine($"[DeviceFaceRegister] LoadDropdown: {dt.Rows.Count} nhân viên từ DB");
             foreach (DataRow row in dt.Rows)
             {
                 string code  = row["mapNV"].ToString();
@@ -46,6 +47,7 @@ namespace HLVTimeSheet.Admin
             lblResult.Text = "";
 
             string employeeCode = ddlNhanVien.SelectedValue;
+            Debug.WriteLine($"[DeviceFaceRegister] BtnUpload_Click: employeeCode={employeeCode}, hasFile={fuAnh.HasFile}");
             if (string.IsNullOrEmpty(employeeCode))
             {
                 lblResult.Text = Alert("warning", "Vui lòng chọn nhân viên.");
@@ -76,6 +78,7 @@ namespace HLVTimeSheet.Admin
             byte[] imageBytes = new byte[fuAnh.PostedFile.ContentLength];
             fuAnh.PostedFile.InputStream.Read(imageBytes, 0, imageBytes.Length);
             string fileName = fuAnh.FileName;
+            Debug.WriteLine($"[DeviceFaceRegister] Upload: file={fileName}, size={imageBytes.Length}, mime={mime}");
 
             // Lấy thông tin nhân viên để điền fullName, department, position
             string fullName = "", department = "", position = "";
@@ -126,6 +129,7 @@ namespace HLVTimeSheet.Admin
             catch (Exception ex)
             {
                 WriteLog($"RegisterFace EXCEPTION [{employeeCode}]: {ex}");
+                Debug.WriteLine($"[DeviceFaceRegister] RegisterFace EXCEPTION [{employeeCode}]: {ex}");
                 lblResult.Text = Alert("danger", $"Lỗi kết nối DeviceManager: {HttpUtility.HtmlEncode(ex.Message)}");
             }
         }
@@ -135,6 +139,7 @@ namespace HLVTimeSheet.Admin
         protected void BtnRemoveFace_Click(object sender, EventArgs e)
         {
             string code = hdnRemoveCode.Value;
+            Debug.WriteLine($"[DeviceFaceRegister] BtnRemoveFace_Click: code={code}");
             if (string.IsNullOrEmpty(code)) return;
 
             try
@@ -175,13 +180,16 @@ namespace HLVTimeSheet.Admin
             try
             {
                 var dmList = await svc.GetAllEmployeesFromDeviceAsync(limit: 500);
+                Debug.WriteLine($"[DeviceFaceRegister] RenderList: {dmList.Count} nhân viên từ DeviceManager");
                 foreach (var emp in dmList)
                     if (!string.IsNullOrEmpty(emp.EmployeeCode))
-                        faceUrls[emp.EmployeeCode] = emp.FaceImages?.Count > 0
-                            ? emp.FaceImages[0].ImageUrl ?? ""
-                            : "";
+                    {
+                        string imgPath = emp.FaceImages?.Count > 0 ? emp.FaceImages[0].ImageUrl ?? "" : "";
+                        faceUrls[emp.EmployeeCode] = imgPath;
+                        Debug.WriteLine($"[DeviceFaceRegister]   {emp.EmployeeCode} → faceUrl={imgPath}");
+                    }
             }
-            catch { /* DeviceManager không kết nối được → bỏ qua */ }
+            catch (Exception ex) { Debug.WriteLine($"[DeviceFaceRegister] RenderList DeviceManager ERROR: {ex.Message}"); }
 
             var registered = new System.Collections.Generic.HashSet<string>(faceUrls.Keys, StringComparer.OrdinalIgnoreCase);
 
@@ -202,7 +210,10 @@ namespace HLVTimeSheet.Admin
                 string imgUrl  = hasface && faceUrls.TryGetValue(code, out string u) ? u : "";
                 // Proxy qua hdFaceImage.ashx (server gửi API key, không cần Referer domain)
                 if (!string.IsNullOrEmpty(imgUrl) && imgUrl.StartsWith("/"))
+                {
+                    Debug.WriteLine($"[DeviceFaceRegister]   proxy img [{code}]: {imgUrl}");
                     imgUrl = "/Admin/Hander/hdFaceImage.ashx?path=" + HttpUtility.UrlEncode(imgUrl);
+                }
 
                 string faceCell = hasface
                     ? (string.IsNullOrEmpty(imgUrl)
