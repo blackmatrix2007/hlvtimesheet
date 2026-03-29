@@ -170,6 +170,12 @@ namespace HLVTimeSheet.Admin
             var svc     = new EmployeeSyncService();
             DataTable dt = svc.GetActiveEmployeesFromDb();
 
+            // Build image base URL từ config (bỏ /api suffix, giống FaceGallery.jsx)
+            var cfg = DeviceManagerConfig.Load();
+            string imageBaseUrl = (cfg.BaseUrl ?? "https://device.erp-x.com/api").TrimEnd('/');
+            if (imageBaseUrl.EndsWith("/api", StringComparison.OrdinalIgnoreCase))
+                imageBaseUrl = imageBaseUrl.Substring(0, imageBaseUrl.Length - 4);
+
             // Lấy danh sách đã đăng ký từ DeviceManager (code → URL ảnh đầu tiên)
             var faceUrls = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             try
@@ -200,9 +206,9 @@ namespace HLVTimeSheet.Admin
                 string code    = row["mapNV"].ToString();
                 bool   hasface = registered.Contains(code);
                 string imgUrl  = hasface && faceUrls.TryGetValue(code, out string u) ? u : "";
-                // Proxy qua hdFaceImage.ashx (thêm Referer hcm.erp-x.com để server cho phép)
+                // Load ảnh trực tiếp từ device.erp-x.com (giống FaceGallery.jsx)
                 if (!string.IsNullOrEmpty(imgUrl) && imgUrl.StartsWith("/"))
-                    imgUrl = "/Admin/Hander/hdFaceImage.ashx?path=" + HttpUtility.UrlEncode(imgUrl);
+                    imgUrl = imageBaseUrl + imgUrl;
 
                 string faceCell = hasface
                     ? (string.IsNullOrEmpty(imgUrl)
