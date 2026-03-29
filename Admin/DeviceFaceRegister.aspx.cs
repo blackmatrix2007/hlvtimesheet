@@ -208,13 +208,11 @@ namespace HLVTimeSheet.Admin
                 string code    = row["mapNV"].ToString();
                 bool   hasface = registered.Contains(code);
                 string imgUrl  = hasface && faceUrls.TryGetValue(code, out string u) ? u : "";
-                // Proxy qua hdFaceImage.ashx (server gửi API key, không cần Referer domain)
+                // Load ảnh trực tiếp từ device.erp-x.com (giống hcm.erp-x.com, không cần proxy)
                 if (!string.IsNullOrEmpty(imgUrl) && imgUrl.StartsWith("/"))
                 {
-                    Debug.WriteLine($"[DeviceFaceRegister]   proxy img [{code}]: {imgUrl}");
-                    // thêm v= để tránh browser cache lần 500 cũ
-                    imgUrl = "/Admin/Hander/hdFaceImage.ashx?path=" + HttpUtility.UrlEncode(imgUrl)
-                           + "&v=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                    imgUrl = "https://device.erp-x.com" + imgUrl;
+                    Debug.WriteLine($"[DeviceFaceRegister]   img [{code}]: {imgUrl}");
                 }
 
                 string faceCell = hasface
