@@ -18,6 +18,8 @@ namespace HLVTimeSheet.Admin
                 txtTo.Text         = DateTime.Today.ToString("yyyy-MM-dd");
                 txtImportFrom.Text = DateTime.Today.ToString("yyyy-MM-dd");
                 txtImportTo.Text   = DateTime.Today.ToString("yyyy-MM-dd");
+                txtViewFrom.Text   = DateTime.Today.ToString("yyyy-MM-dd");
+                txtViewTo.Text     = DateTime.Today.ToString("yyyy-MM-dd");
 
                 // Hiển thị URL webhook để admin copy vào DeviceManager
                 var baseUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}";
@@ -201,6 +203,72 @@ namespace HLVTimeSheet.Admin
             catch (Exception ex)
             {
                 litHlvStaff.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
+            }
+        }
+
+        // ─── Xem danh sách chấm công từ DeviceManager ────────────────────────────
+
+        protected void BtnViewLogs_Click(object sender, EventArgs e)
+        {
+            Task.Run(async () => await LoadViewLogsAsync()).GetAwaiter().GetResult();
+        }
+
+        private async Task LoadViewLogsAsync()
+        {
+            try
+            {
+                var svc  = new AttendanceSyncService();
+                var logs = await svc.GetCheckInsAsync(txtViewFrom.Text, txtViewTo.Text);
+
+                if (logs == null || logs.Count == 0)
+                {
+                    litViewLogs.Text = "<p class='text-muted'>Không có dữ liệu trong khoảng thời gian này.</p>";
+                    return;
+                }
+
+                var sb = new StringBuilder();
+                sb.AppendFormat("<p class='text-muted mb-2'>Tổng: <strong>{0}</strong> lượt chấm công</p>", logs.Count);
+                sb.Append("<table class='table table-sm table-bordered table-hover'>");
+                sb.Append("<thead class='thead-light'><tr>" +
+                          "<th>#</th><th>Mã NV</th><th>Họ tên</th>" +
+                          "<th>Loại</th><th>Thời gian</th><th>Độ tin cậy</th><th>Thiết bị</th>" +
+                          "</tr></thead><tbody>");
+
+                int stt = 0;
+                foreach (var log in logs)
+                {
+                    stt++;
+                    bool isIn      = log.Type == "check_in";
+                    string badgeClass = isIn ? "badge-success" : "badge-warning";
+                    string loaiText   = isIn ? "Vào" : "Ra";
+                    DateTime tg = log.Timestamp.ToLocalTime();
+                    double conf = log.ConfidenceScore;
+
+                    sb.AppendFormat(
+                        "<tr>" +
+                        "<td>{0}</td>" +
+                        "<td><strong>{1}</strong></td>" +
+                        "<td>{2}</td>" +
+                        "<td><span class='{3}'>{4}</span></td>" +
+                        "<td>{5:dd/MM/yyyy HH:mm:ss}</td>" +
+                        "<td>{6}</td>" +
+                        "<td>{7}</td>" +
+                        "</tr>",
+                        stt,
+                        HttpUtility.HtmlEncode(log.EmployeeCode ?? ""),
+                        HttpUtility.HtmlEncode(log.EmployeeName ?? ""),
+                        badgeClass, loaiText,
+                        tg,
+                        conf > 0 ? conf.ToString("P0") : "—",
+                        HttpUtility.HtmlEncode(log.DeviceId ?? ""));
+                }
+
+                sb.Append("</tbody></table>");
+                litViewLogs.Text = sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                litViewLogs.Text = $"<div class='alert alert-danger'>Lỗi: {HttpUtility.HtmlEncode(ex.Message)}</div>";
             }
         }
 

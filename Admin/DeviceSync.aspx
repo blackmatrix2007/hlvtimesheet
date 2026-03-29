@@ -31,6 +31,20 @@
         </div>
     </div>
 
+    <!-- Xem danh sách chấm công từ DeviceManager -->
+    <div class="card">
+        <h6>Xem danh sách chấm công từ DeviceManager</h6>
+        <div class="form-inline mb-2">
+            <label class="mr-2">Từ ngày:</label>
+            <asp:TextBox ID="txtViewFrom" runat="server" CssClass="form-control mr-3" TextMode="Date" />
+            <label class="mr-2">Đến ngày:</label>
+            <asp:TextBox ID="txtViewTo"   runat="server" CssClass="form-control mr-3" TextMode="Date" />
+            <asp:Button ID="btnViewLogs" runat="server" Text="Xem danh sách"
+                        CssClass="btn btn-info" OnClick="BtnViewLogs_Click" />
+        </div>
+        <asp:Literal ID="litViewLogs" runat="server" />
+    </div>
+
     <!-- Kéo dữ liệu (PULL dự phòng) -->
     <div class="card">
         <h6>Kéo dữ liệu thủ công (PULL — dự phòng khi webhook bị mất)</h6>
