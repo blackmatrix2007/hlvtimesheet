@@ -39,7 +39,7 @@ namespace HLVTimeSheet.Model
                 object obj = command.ExecuteScalar();
                 if (obj != null && obj.ToString().Length > 3)
                 {
-                    chamcong_fk = (string)obj;
+                    chamcong_fk = obj.ToString();
                     sql = "UPDATE ChamCong SET ngaysua = GETDATE(), nguoisua = '" + nguoitao + "' WHERE pk_seq = '" + chamcong_fk + "' ";
                     command.CommandTimeout = int.MaxValue;
                     command.CommandText = sql;
@@ -163,7 +163,7 @@ namespace HLVTimeSheet.Model
                 if (obj != null && obj.ToString().Length > 3)
                 {
                     flag = true;
-                    chamcong_fk = (string)obj;
+                    chamcong_fk = obj.ToString();
                     Debug.WriteLine($"[TimeKeeping] UPDATE existing ChamCong pk={chamcong_fk}");
                     sql = "UPDATE ChamCong SET ngaysua = GETDATE(), nguoisua = '" + nguoitao + "' WHERE pk_seq = '" + chamcong_fk + "' ";
                     command.CommandTimeout = int.MaxValue;
