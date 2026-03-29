@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
 
@@ -128,6 +129,8 @@ namespace HLVTimeSheet.Model
 
         public string INSERT_TimeKeeping_New(string ngaynhap, string phongban_fk, string nhansu_fk, string gioIn, string phutIn, string gioOut, string phutOut, string loai, string trangthai, string nguoitao)
         {
+            Debug.WriteLine($"[TimeKeeping] INSERT_NEW: nhansu_fk={nhansu_fk}, phongban_fk={phongban_fk}, ngay={ngaynhap}, in={gioIn}:{phutIn}, out={gioOut}:{phutOut}");
+
             string chamcong_fk = "0";
             string thang = "";
             string nam = "";
@@ -145,10 +148,12 @@ namespace HLVTimeSheet.Model
                 transaction = connection.BeginTransaction();
                 // thực hiện truy vấn
                 object obj = command.ExecuteScalar();
+                Debug.WriteLine($"[TimeKeeping] ChamCong lookup: nhansu_fk={nhansu_fk}, ngay={ngaynhap} → existing_pk={obj}");
                 if (obj != null && obj.ToString().Length > 3)
                 {
                     flag = true;
                     chamcong_fk = (string)obj;
+                    Debug.WriteLine($"[TimeKeeping] UPDATE existing ChamCong pk={chamcong_fk}");
                     sql = "UPDATE ChamCong SET ngaysua = GETDATE(), nguoisua = '" + nguoitao + "' WHERE pk_seq = '" + chamcong_fk + "' ";
                     command.CommandTimeout = int.MaxValue;
                     command.CommandText = sql;
@@ -162,6 +167,7 @@ namespace HLVTimeSheet.Model
                 }
                 else
                 {
+                    Debug.WriteLine($"[TimeKeeping] INSERT new ChamCong: ngay={ngaynhap}, phongban={phongban_fk}, nhansu={nhansu_fk}");
                     sql = "INSERT ChamCong(ngaynhap, phongban_fk, nhansu_fk, thoigianIn, thoigianOut, thang, nam, trangthai, nguoitao, nguoisua) " +
                     " SELECT N'" + ngaynhap + "', N'" + phongban_fk + "', N'" + nhansu_fk + "', N'', N'', '" + thang + "', N'" + nam + "', '" + trangthai + "', '" + nguoitao + "', '" + nguoitao + "' ";
                     command.CommandTimeout = int.MaxValue;
@@ -171,6 +177,7 @@ namespace HLVTimeSheet.Model
                     {
                         transaction.Rollback();
                         connection.Close();
+                        Debug.WriteLine($"[TimeKeeping] FAILED INSERT ChamCong: nhansu={nhansu_fk}, phongban={phongban_fk}");
                         return "2.Error! Cannot created new this.";
                     }
 
@@ -180,6 +187,7 @@ namespace HLVTimeSheet.Model
                         command.CommandTimeout = int.MaxValue;
                         command.CommandText = sql;
                         chamcong_fk = command.ExecuteScalar().ToString();
+                        Debug.WriteLine($"[TimeKeeping] New ChamCong pk={chamcong_fk}");
                     }
                 }
 
@@ -187,6 +195,7 @@ namespace HLVTimeSheet.Model
                 // 1 - In
                 // 2 - Out
                 thoigian = gioIn + ":" + phutIn;
+                Debug.WriteLine($"[TimeKeeping] thoigianIn='{thoigian}' (len={thoigian.Length}), will insert={thoigian.Length > 3}");
                 if (thoigian.Length > 3)
                 {
                     loai = "1";
@@ -207,12 +216,14 @@ namespace HLVTimeSheet.Model
 
                     }    
 
+                    Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=1 (In): chamcong={chamcong_fk}, phongban={phongban_fk}, gio={gioIn}:{phutIn}");
                     sql = "INSERT ChamCong_ChiTiet(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, trangthai, nguoitao, nguoisua) " +
                     " SELECT '" + chamcong_fk + "', N'" + ngaynhap + "', N'" + phongban_fk + "', N'" + nhansu_fk + "', N'" + thoigian + "', N'" + gioIn + "', '" + phutIn + "', '" + thang + "', N'" + nam + "', '" + loai + "', gioStart, phutStart, gioEnd, phutEnd, '" + trangthai + "', '" + nguoitao + "', '" + nguoitao + "' " +
                     " FROM GioLamViec WHERE loai = 1 AND trangthai = 1 AND phongban_fk = '" + phongban_fk + "' ";
                     command.CommandTimeout = int.MaxValue;
                     command.CommandText = sql;
                     kq = command.ExecuteNonQuery();
+                    Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=1 result: kq={kq} (0=FAIL=GioLamViec không có phongban_fk={phongban_fk})");
                     if (kq < 1)
                     {
                         transaction.Rollback();
@@ -222,7 +233,8 @@ namespace HLVTimeSheet.Model
                 }
 
                 thoigian = "";
-                thoigian = gioOut + ":" + phutOut;               
+                thoigian = gioOut + ":" + phutOut;
+                Debug.WriteLine($"[TimeKeeping] thoigianOut='{thoigian}' (len={thoigian.Length}), will insert={thoigian.Length > 3}");
                 if (thoigian.Length > 3)
                 {
                     loai = "2";
@@ -243,12 +255,14 @@ namespace HLVTimeSheet.Model
 
                     }
 
+                    Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=2 (Out): chamcong={chamcong_fk}, phongban={phongban_fk}, gio={gioOut}:{phutOut}");
                     sql = "INSERT ChamCong_ChiTiet(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, trangthai, nguoitao, nguoisua) " +
                     " SELECT '" + chamcong_fk + "', N'" + ngaynhap + "', N'" + phongban_fk + "', N'" + nhansu_fk + "', N'" + thoigian + "', N'" + gioOut + "', '" + phutOut + "', '" + thang + "', N'" + nam + "', '" + loai + "', gioStart, phutStart, gioEnd, phutEnd, '" + trangthai + "', '" + nguoitao + "', '" + nguoitao + "' " +
                     " FROM GioLamViec WHERE loai = 1 AND trangthai = 1 AND phongban_fk = '" + phongban_fk + "' ";
                     command.CommandTimeout = int.MaxValue;
                     command.CommandText = sql;
                     kq = command.ExecuteNonQuery();
+                    Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=2 result: kq={kq} (0=FAIL=GioLamViec không có phongban_fk={phongban_fk})");
                     if (kq < 1)
                     {
                         transaction.Rollback();
@@ -257,6 +271,7 @@ namespace HLVTimeSheet.Model
                     }
                 }
 
+                Debug.WriteLine($"[TimeKeeping] COMMIT OK: nhansu={nhansu_fk}, chamcong={chamcong_fk}");
                 transaction.Commit();
             }
             return "";

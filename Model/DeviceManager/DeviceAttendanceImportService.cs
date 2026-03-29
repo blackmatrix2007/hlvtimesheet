@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using HLVTimeSheet.AcsessData;
 using HLVTimeSheet.Model;
 
@@ -38,6 +39,8 @@ namespace HLVTimeSheet.Model.DeviceManager
             var result = new ImportResult();
             var rows   = GetDailyCheckInOutFromDevice(ngay);
 
+            Debug.WriteLine($"[Import] ImportDay {ngay:dd/MM/yyyy}: {rows.Rows.Count} rows từ ChamCong_Device");
+
             var tkCtrl = new TimeKeepingController();
 
             foreach (DataRow row in rows.Rows)
@@ -47,10 +50,13 @@ namespace HLVTimeSheet.Model.DeviceManager
                 string nhansuFk   = row["nhansuFk"].ToString();
                 string phongbanFk = row["phongbanFk"].ToString();
 
+                Debug.WriteLine($"[Import] Row: mapNV={mapNV}, nhansuFk={nhansuFk}, phongbanFk={phongbanFk}, gioVao={row["gioVao"]}, gioRa={row["gioRa"]}");
+
                 if (string.IsNullOrEmpty(nhansuFk))
                 {
                     result.Skipped++;
                     result.Errors.Add($"[{mapNV}] Không tìm thấy nhân viên trong DanhSachNhanSu.");
+                    Debug.WriteLine($"[Import] SKIP {mapNV}: nhansuFk rỗng");
                     continue;
                 }
 
@@ -75,6 +81,8 @@ namespace HLVTimeSheet.Model.DeviceManager
                 // Ngày dạng dd/MM/yyyy (đúng format INSERT_TimeKeeping_New)
                 string ngayStr = ngay.ToString("dd/MM/yyyy");
 
+                Debug.WriteLine($"[Import] Calling INSERT_TimeKeeping_New: nhansu={nhansuFk}, phongban={phongbanFk}, ngay={ngayStr}, in={gioIn}:{phutIn}, out={gioOut}:{phutOut}");
+
                 string kq = tkCtrl.INSERT_TimeKeeping_New(
                     ngaynhap:   ngayStr,
                     phongban_fk: phongbanFk,
@@ -88,9 +96,15 @@ namespace HLVTimeSheet.Model.DeviceManager
                     nguoitao:    nguoiTao);
 
                 if (string.IsNullOrEmpty(kq))
+                {
                     result.Succeeded++;
+                    Debug.WriteLine($"[Import] OK: {mapNV}");
+                }
                 else
+                {
                     result.Errors.Add($"[{mapNV}] {kq}");
+                    Debug.WriteLine($"[Import] FAIL: {mapNV} → {kq}");
+                }
             }
 
             return result;
