@@ -81,29 +81,45 @@ namespace HLVTimeSheet.Model.DeviceManager
                 // Ngày dạng dd/MM/yyyy (đúng format INSERT_TimeKeeping_New)
                 string ngayStr = ngay.ToString("dd/MM/yyyy");
 
+                if (string.IsNullOrEmpty(phongbanFk) || phongbanFk == "0")
+                {
+                    result.Skipped++;
+                    result.Errors.Add($"[{mapNV}] Nhân viên chưa có phòng ban (phongban_fk=0) — cần cấu hình trong DanhSachNhanSu.");
+                    Debug.WriteLine($"[Import] SKIP {mapNV}: phongban_fk rỗng/0, không tìm được GioLamViec");
+                    continue;
+                }
+
                 Debug.WriteLine($"[Import] Calling INSERT_TimeKeeping_New: nhansu={nhansuFk}, phongban={phongbanFk}, ngay={ngayStr}, in={gioIn}:{phutIn}, out={gioOut}:{phutOut}");
 
-                string kq = tkCtrl.INSERT_TimeKeeping_New(
-                    ngaynhap:   ngayStr,
-                    phongban_fk: phongbanFk,
-                    nhansu_fk:   nhansuFk,
-                    gioIn:       gioIn,
-                    phutIn:      phutIn,
-                    gioOut:      gioOut,
-                    phutOut:     phutOut,
-                    loai:        "1",
-                    trangthai:   "1",
-                    nguoitao:    nguoiTao);
+                try
+                {
+                    string kq = tkCtrl.INSERT_TimeKeeping_New(
+                        ngaynhap:    ngayStr,
+                        phongban_fk: phongbanFk,
+                        nhansu_fk:   nhansuFk,
+                        gioIn:       gioIn,
+                        phutIn:      phutIn,
+                        gioOut:      gioOut,
+                        phutOut:     phutOut,
+                        loai:        "1",
+                        trangthai:   "1",
+                        nguoitao:    nguoiTao);
 
-                if (string.IsNullOrEmpty(kq))
-                {
-                    result.Succeeded++;
-                    Debug.WriteLine($"[Import] OK: {mapNV}");
+                    if (string.IsNullOrEmpty(kq))
+                    {
+                        result.Succeeded++;
+                        Debug.WriteLine($"[Import] OK: {mapNV}");
+                    }
+                    else
+                    {
+                        result.Errors.Add($"[{mapNV}] {kq}");
+                        Debug.WriteLine($"[Import] FAIL: {mapNV} → {kq}");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    result.Errors.Add($"[{mapNV}] {kq}");
-                    Debug.WriteLine($"[Import] FAIL: {mapNV} → {kq}");
+                    result.Errors.Add($"[{mapNV}] Exception: {ex.Message}");
+                    Debug.WriteLine($"[Import] EXCEPTION {mapNV}: {ex.Message}");
                 }
             }
 

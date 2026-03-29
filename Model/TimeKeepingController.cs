@@ -146,6 +146,7 @@ namespace HLVTimeSheet.Model
             {
                 connection.Open();
                 transaction = connection.BeginTransaction();
+                command.Transaction = transaction; // bắt buộc khi connection có active transaction
                 // thực hiện truy vấn
                 object obj = command.ExecuteScalar();
                 Debug.WriteLine($"[TimeKeeping] ChamCong lookup: nhansu_fk={nhansu_fk}, ngay={ngaynhap} → existing_pk={obj}");
