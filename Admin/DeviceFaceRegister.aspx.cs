@@ -153,17 +153,20 @@ namespace HLVTimeSheet.Admin
             var svc     = new EmployeeSyncService();
             DataTable dt = svc.GetActiveEmployeesFromDb();
 
-            // Lấy danh sách đã đăng ký từ DeviceManager
-            System.Collections.Generic.HashSet<string> registered =
-                new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            // Lấy danh sách đã đăng ký từ DeviceManager (code → URL ảnh đầu tiên)
+            var faceUrls = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             try
             {
                 var dmList = await svc.GetAllEmployeesFromDeviceAsync(limit: 500);
                 foreach (var emp in dmList)
                     if (!string.IsNullOrEmpty(emp.EmployeeCode))
-                        registered.Add(emp.EmployeeCode);
+                        faceUrls[emp.EmployeeCode] = emp.FaceImages?.Count > 0
+                            ? emp.FaceImages[0].ImageUrl ?? ""
+                            : "";
             }
             catch { /* DeviceManager không kết nối được → bỏ qua */ }
+
+            var registered = new System.Collections.Generic.HashSet<string>(faceUrls.Keys, StringComparer.OrdinalIgnoreCase);
 
             var sb = new StringBuilder();
             sb.AppendFormat("<p class='text-muted mb-2'>Tổng DB: <strong>{0}</strong> nhân viên — " +
@@ -179,20 +182,26 @@ namespace HLVTimeSheet.Admin
             {
                 string code    = row["mapNV"].ToString();
                 bool   hasface = registered.Contains(code);
+                string imgUrl  = hasface && faceUrls.TryGetValue(code, out string u) ? u : "";
+
+                string faceCell = hasface
+                    ? (string.IsNullOrEmpty(imgUrl)
+                        ? "<span class='badge-ok'>Đã đăng ký</span>"
+                        : $"<img src='{HttpUtility.HtmlAttributeEncode(imgUrl)}' style='width:48px;height:48px;object-fit:cover;border-radius:4px;border:2px solid #28a745;' /> <span class='badge-ok' style='vertical-align:middle'>Đã đăng ký</span>")
+                    : "<span class='badge-no'>Chưa đăng ký</span>";
+
                 string actions = $"<a href='#' onclick=\"document.getElementById('{ddlNhanVien.ClientID}').value='{HttpUtility.JavaScriptStringEncode(code)}';return false;\" class='btn btn-xs btn-outline-primary btn-sm mr-1'>Upload ảnh</a>";
                 if (hasface)
                     actions += $"<a href='#' onclick=\"removeFace('{HttpUtility.JavaScriptStringEncode(code)}');return false;\" class='btn btn-xs btn-outline-danger btn-sm'>Xóa khuôn mặt</a>";
 
                 sb.AppendFormat(
                     "<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td>" +
-                    "<td><span class='{4}'>{5}</span></td>" +
-                    "<td>{6}</td></tr>",
+                    "<td>{4}</td><td>{5}</td></tr>",
                     HttpUtility.HtmlEncode(code),
                     HttpUtility.HtmlEncode(row["hoTen"].ToString()),
                     HttpUtility.HtmlEncode(row["phongBan"].ToString()),
                     HttpUtility.HtmlEncode(row["chucVu"].ToString()),
-                    hasface ? "badge-ok" : "badge-no",
-                    hasface ? "Đã đăng ký" : "Chưa đăng ký",
+                    faceCell,
                     actions);
             }
 
