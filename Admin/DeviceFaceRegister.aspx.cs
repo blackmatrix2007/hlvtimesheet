@@ -199,15 +199,9 @@ namespace HLVTimeSheet.Admin
             {
                 string code    = row["mapNV"].ToString();
                 bool   hasface = registered.Contains(code);
-                string imgUrl  = hasface && faceUrls.TryGetValue(code, out string u) ? u : "";
-                // faceImageUrl là relative path → proxy qua handler nội bộ (cần API key)
-                if (!string.IsNullOrEmpty(imgUrl) && imgUrl.StartsWith("/"))
-                    imgUrl = "/Admin/Hander/hdFaceImage.ashx?path=" + HttpUtility.UrlEncode(imgUrl);
-
+                // faceImageUrl không public được — hiển thị icon placeholder
                 string faceCell = hasface
-                    ? (string.IsNullOrEmpty(imgUrl)
-                        ? "<span class='badge-ok'>Đã đăng ký</span>"
-                        : $"<img src='{HttpUtility.HtmlAttributeEncode(imgUrl)}' style='width:48px;height:48px;object-fit:cover;border-radius:4px;border:2px solid #28a745;' onerror=\"this.style.display='none'\" /> <span class='badge-ok' style='vertical-align:middle'>Đã đăng ký</span>")
+                    ? "<span style='font-size:2em;vertical-align:middle' title='Đã đăng ký khuôn mặt'>&#128100;</span> <span class='badge-ok' style='vertical-align:middle'>Đã đăng ký</span>"
                     : "<span class='badge-no'>Chưa đăng ký</span>";
 
                 string actions = $"<a href='#' onclick=\"var d=document.getElementById('{ddlNhanVien.ClientID}');d.value='{HttpUtility.JavaScriptStringEncode(code)}';window.scrollTo({{top:0,behavior:'smooth'}});d.focus();return false;\" class='btn btn-xs btn-outline-primary btn-sm mr-1'>Upload ảnh</a>";
