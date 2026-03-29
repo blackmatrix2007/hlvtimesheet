@@ -138,6 +138,16 @@ namespace HLVTimeSheet.Model
             int kq = 0;
             bool flag = false;
 
+            // Parse thang/nam từ ngaynhap (dd/MM/yyyy) để INSERT ChamCong
+            if (DateTime.TryParseExact(ngaynhap, "dd/MM/yyyy",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out DateTime ngayParsed))
+            {
+                thang = ngayParsed.Month.ToString();
+                nam   = ngayParsed.Year.ToString();
+            }
+            Debug.WriteLine($"[TimeKeeping] thang={thang}, nam={nam}");
+
             string sql = "SELECT pk_seq FROM ChamCong WHERE nhansu_fk = N'" + nhansu_fk + "' AND ngaynhap = '" + ngaynhap + "' ";
             ConnectionDatabase conn = new ConnectionDatabase();
             SqlTransaction transaction;            
