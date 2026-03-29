@@ -40,6 +40,11 @@
         <asp:Label ID="lblResult" runat="server" />
     </div>
 
+    <!-- Hidden field để truyền mã NV cần xóa -->
+    <asp:HiddenField ID="hdnRemoveCode" runat="server" />
+    <asp:Button ID="btnRemoveFace" runat="server" Text="" Style="display:none"
+                OnClick="BtnRemoveFace_Click" />
+
     <!-- Danh sách đã đăng ký -->
     <div class="card">
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -47,6 +52,7 @@
             <asp:Button ID="btnRefresh" runat="server" Text="Làm mới"
                         CssClass="btn btn-sm btn-secondary" OnClick="BtnRefresh_Click" />
         </div>
+        <asp:Label ID="lblRemoveResult" runat="server" />
         <asp:Literal ID="litList" runat="server" />
     </div>
 </div>
@@ -55,6 +61,12 @@
 <script src="../Scripts/jquery-3.6.0.min.js"></script>
 <script src="../Content/bootstrap/js/bootstrap.min.js"></script>
 <script>
+    function removeFace(code) {
+        if (!confirm('Xóa khuôn mặt của ' + code + ' khỏi DeviceManager?')) return;
+        document.getElementById('<%= hdnRemoveCode.ClientID %>').value = code;
+        document.getElementById('<%= btnRemoveFace.ClientID %>').click();
+    }
+
     // Preview ảnh trước khi upload
     document.getElementById('<%= fuAnh.ClientID %>').addEventListener('change', function () {
         var file = this.files[0];

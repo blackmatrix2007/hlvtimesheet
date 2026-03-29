@@ -118,6 +118,29 @@ namespace HLVTimeSheet.Admin
             }
         }
 
+        // ─── Xóa khuôn mặt ───────────────────────────────────────────────────────
+
+        protected void BtnRemoveFace_Click(object sender, EventArgs e)
+        {
+            string code = hdnRemoveCode.Value;
+            if (string.IsNullOrEmpty(code)) return;
+
+            try
+            {
+                var svc = new EmployeeSyncService();
+                bool ok = Task.Run(async () => await svc.DeleteEmployeeAsync(code)).GetAwaiter().GetResult();
+                lblRemoveResult.Text = ok
+                    ? Alert("success", $"Đã xóa khuôn mặt của <strong>{HttpUtility.HtmlEncode(code)}</strong> khỏi DeviceManager.")
+                    : Alert("warning", $"DeviceManager không xác nhận xóa <strong>{HttpUtility.HtmlEncode(code)}</strong>.");
+            }
+            catch (Exception ex)
+            {
+                lblRemoveResult.Text = Alert("danger", $"Lỗi: {HttpUtility.HtmlEncode(ex.Message)}");
+            }
+
+            Task.Run(async () => await RenderListAsync()).GetAwaiter().GetResult();
+        }
+
         // ─── Refresh danh sách ────────────────────────────────────────────────────
 
         protected void BtnRefresh_Click(object sender, EventArgs e)
@@ -156,16 +179,21 @@ namespace HLVTimeSheet.Admin
             {
                 string code    = row["mapNV"].ToString();
                 bool   hasface = registered.Contains(code);
+                string actions = $"<a href='#' onclick=\"document.getElementById('{ddlNhanVien.ClientID}').value='{HttpUtility.JavaScriptStringEncode(code)}';return false;\" class='btn btn-xs btn-outline-primary btn-sm mr-1'>Upload ảnh</a>";
+                if (hasface)
+                    actions += $"<a href='#' onclick=\"removeFace('{HttpUtility.JavaScriptStringEncode(code)}');return false;\" class='btn btn-xs btn-outline-danger btn-sm'>Xóa khuôn mặt</a>";
+
                 sb.AppendFormat(
                     "<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td>" +
                     "<td><span class='{4}'>{5}</span></td>" +
-                    "<td><a href='DeviceFaceRegister.aspx' onclick=\"selectEmployee('{0}');return false;\" class='btn btn-xs btn-outline-primary btn-sm'>Upload ảnh</a></td></tr>",
+                    "<td>{6}</td></tr>",
                     HttpUtility.HtmlEncode(code),
                     HttpUtility.HtmlEncode(row["hoTen"].ToString()),
                     HttpUtility.HtmlEncode(row["phongBan"].ToString()),
                     HttpUtility.HtmlEncode(row["chucVu"].ToString()),
                     hasface ? "badge-ok" : "badge-no",
-                    hasface ? "Đã đăng ký" : "Chưa đăng ký");
+                    hasface ? "Đã đăng ký" : "Chưa đăng ký",
+                    actions);
             }
 
             sb.Append("</tbody></table>");

@@ -51,6 +51,21 @@ namespace HLVTimeSheet.Admin
         protected global::System.Web.UI.WebControls.Label lblResult;
 
         /// <summary>
+        /// hdnRemoveCode control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HiddenField hdnRemoveCode;
+
+        /// <summary>
+        /// btnRemoveFace control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnRemoveFace;
+
+        /// <summary>
+        /// lblRemoveResult control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblRemoveResult;
+
+        /// <summary>
         /// btnRefresh control.
         /// </summary>
         /// <remarks>
