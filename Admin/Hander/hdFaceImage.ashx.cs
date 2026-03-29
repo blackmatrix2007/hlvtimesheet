@@ -1,13 +1,13 @@
 using System;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.IO;
+using System.Net;
 using System.Web;
 using HLVTimeSheet.Model.DeviceManager;
 
 namespace HLVTimeSheet.Admin.Hander
 {
     /// <summary>
-    /// Proxy ảnh khuôn mặt từ DeviceManager (URL nội bộ cần x-api-key).
+    /// Proxy ảnh khuôn mặt từ DeviceManager (URL cần x-api-key).
     /// Gọi: /Admin/Hander/hdFaceImage.ashx?path=/uploads/faces/.../xxx.jpg
     /// </summary>
     public class hdFaceImage : IHttpHandler
@@ -15,7 +15,7 @@ namespace HLVTimeSheet.Admin.Hander
         public void ProcessRequest(HttpContext context)
         {
             string path = context.Request.QueryString["path"];
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path) || !path.StartsWith("/uploads/"))
             {
                 context.Response.StatusCode = 400;
                 return;
@@ -26,25 +26,27 @@ namespace HLVTimeSheet.Admin.Hander
 
             try
             {
-                using (var client = new HttpClient())
+                var req = (HttpWebRequest)WebRequest.Create(url);
+                req.Method  = "GET";
+                req.Timeout = 10000;
+                req.Headers.Add("x-api-key", config.ApiKey);
+
+                using (var resp = (HttpWebResponse)req.GetResponse())
+                using (var stream = resp.GetResponseStream())
                 {
-                    client.DefaultRequestHeaders.Add("x-api-key", config.ApiKey);
-                    var response = Task.Run(() => client.GetAsync(url)).GetAwaiter().GetResult();
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        context.Response.StatusCode = (int)response.StatusCode;
-                        return;
-                    }
-
-                    byte[] bytes = Task.Run(() => response.Content.ReadAsByteArrayAsync()).GetAwaiter().GetResult();
-                    string mime  = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
-
-                    context.Response.ContentType = mime;
+                    context.Response.ContentType = resp.ContentType ?? "image/jpeg";
                     context.Response.Cache.SetCacheability(HttpCacheability.Private);
                     context.Response.Cache.SetMaxAge(TimeSpan.FromHours(1));
-                    context.Response.BinaryWrite(bytes);
+
+                    var buf = new byte[4096];
+                    int read;
+                    while ((read = stream.Read(buf, 0, buf.Length)) > 0)
+                        context.Response.OutputStream.Write(buf, 0, read);
                 }
+            }
+            catch (WebException ex) when (ex.Response is HttpWebResponse er)
+            {
+                context.Response.StatusCode = (int)er.StatusCode;
             }
             catch
             {
