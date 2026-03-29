@@ -67,10 +67,8 @@ namespace HLVTimeSheet.Model.DeviceManager
 
             using (var form = new MultipartFormDataContent())
             {
-                var imageContent = new ByteArrayContent(faceImageBytes);
-                imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpeg");
-                form.Add(imageContent, "faceImage", fileName);
-
+                // Text fields TRƯỚC file — Multer đọc req.body.employeeCode trong destination()
+                // chỉ khi text fields đến trước file trong multipart stream
                 form.Add(new StringContent(employeeCode),      "employeeCode");
                 form.Add(new StringContent(fullName ?? ""),    "fullName");
                 form.Add(new StringContent("true"),            "isPrimary");
@@ -79,6 +77,10 @@ namespace HLVTimeSheet.Model.DeviceManager
                 if (!string.IsNullOrEmpty(position))   form.Add(new StringContent(position),   "position");
                 if (!string.IsNullOrEmpty(email))      form.Add(new StringContent(email),      "email");
                 if (!string.IsNullOrEmpty(phone))      form.Add(new StringContent(phone),      "phone");
+
+                var imageContent = new ByteArrayContent(faceImageBytes);
+                imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpeg");
+                form.Add(imageContent, "faceImage", fileName);
 
                 return await _client.PostMultipartAsync<RegisterFaceResponse>(endpoint, form);
             }
