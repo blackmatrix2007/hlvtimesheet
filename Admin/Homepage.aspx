@@ -229,35 +229,6 @@
                 <div class="col-xs-12 col-sm-12 col-lg-12"></div>
             </div>
 
-            <div class="row" style="margin-top:3%; text-align:center;">
-                <div class="col-xs-12 col-sm-12 col-lg-12">
-
-                    <div class="col-lg-1"> </div>
-
-                        <div class="col-xs-6 col-sm-3 col-lg-2 deviceManager" style="margin-top:10px; text-align:center; font-weight:bolder;">
-                            <div>
-                            <%if (roleDevice.Equals("1"))
-                                { %>
-                                <a href="javascript:loadDeviceManager();"><img src="../Images/controls.png" style="width:80%; height:80%; border-radius: 50%;"/></a>
-                            <%} else { %>
-                                <a><img src="../Images/controls.png" style="width:80%; height:80%; border-radius: 50%;"/></a>
-                            <%} %>
-                            </div>
-                            <div>
-                                <%if (roleDevice.Equals("1"))
-                                { %>
-                                <a href="javascript:loadDeviceManager();" style="color:black"><%= hlvDeviceManager %></a>
-                                <%} else { %>
-                                    <%= hlvDeviceManager %>
-                                <%} %>
-                            </div>
-                        </div>
-
-                    <div class="col-lg-1"> </div>
-
-                </div>
-            </div>
-
         </div>
 
         <div class="footer" id="nameCompany">

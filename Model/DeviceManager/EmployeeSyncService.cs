@@ -118,7 +118,7 @@ namespace HLVTimeSheet.Model.DeviceManager
         public DataTable GetActiveEmployeesFromDb()
         {
             var conn = new ConnectionDatabase();
-            using (var sqlConn = new SqlConnection(conn.ReturnConnectionDatabaseWS()))
+            using (var sqlConn = new SqlConnection(conn.ReturnConnectionDatabase()))
             {
                 sqlConn.Open();
                 const string sql = @"
@@ -132,7 +132,7 @@ namespace HLVTimeSheet.Model.DeviceManager
                     FROM DanhSachNhanSu ns
                     LEFT JOIN PhongBan pb ON pb.pk_seq = ns.phongban_fk
                     WHERE ns.trangthai = 1
-                    ORDER BY ns.ma";
+                    ORDER BY ns.capbac, ns.ma ";
 
                 using (var cmd = new SqlCommand(sql, sqlConn))
                 using (var adapter = new SqlDataAdapter(cmd))
