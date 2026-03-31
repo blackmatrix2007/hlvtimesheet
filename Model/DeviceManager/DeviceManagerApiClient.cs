@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -17,6 +18,7 @@ namespace HLVTimeSheet.Model.DeviceManager
 
         public DeviceManagerApiClient(DeviceManagerConfig config)
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
             _http = new HttpClient
             {
                 BaseAddress = new Uri(config.BaseUrl.TrimEnd('/') + "/"),
