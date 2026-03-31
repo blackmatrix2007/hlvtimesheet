@@ -33,46 +33,64 @@ namespace HLVTimeSheet.Model.DeviceManager
 
         public async Task<T> GetAsync<T>(string endpoint)
         {
+            var url = new Uri(_http.BaseAddress, endpoint).ToString();
+            DeviceManagerLogger.LogRequest("GET", url);
             var response = await _http.GetAsync(endpoint);
-            await EnsureSuccessAsync(response);
-            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+            string body = await response.Content.ReadAsStringAsync();
+            DeviceManagerLogger.LogResponse((int)response.StatusCode, url, body);
+            await EnsureSuccessAsync(response, body);
+            return JsonConvert.DeserializeObject<T>(body);
         }
 
         // ─── POST JSON ────────────────────────────────────────────────────────────
 
         public async Task<T> PostAsync<T>(string endpoint, object body)
         {
-            var content  = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+            var url = new Uri(_http.BaseAddress, endpoint).ToString();
+            string reqBody = JsonConvert.SerializeObject(body);
+            DeviceManagerLogger.LogRequest("POST", url, reqBody);
+            var content  = new StringContent(reqBody, Encoding.UTF8, "application/json");
             var response = await _http.PostAsync(endpoint, content);
-            await EnsureSuccessAsync(response);
-            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+            string resBody = await response.Content.ReadAsStringAsync();
+            DeviceManagerLogger.LogResponse((int)response.StatusCode, url, resBody);
+            await EnsureSuccessAsync(response, resBody);
+            return JsonConvert.DeserializeObject<T>(resBody);
         }
 
         // ─── POST multipart/form-data ─────────────────────────────────────────────
 
         public async Task<T> PostMultipartAsync<T>(string endpoint, MultipartFormDataContent form)
         {
+            var url = new Uri(_http.BaseAddress, endpoint).ToString();
+            DeviceManagerLogger.LogRequest("POST(multipart)", url);
             var response = await _http.PostAsync(endpoint, form);
-            await EnsureSuccessAsync(response);
-            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+            string resBody = await response.Content.ReadAsStringAsync();
+            DeviceManagerLogger.LogResponse((int)response.StatusCode, url, resBody);
+            await EnsureSuccessAsync(response, resBody);
+            return JsonConvert.DeserializeObject<T>(resBody);
         }
 
         // ─── DELETE ───────────────────────────────────────────────────────────────
 
         public async Task<T> DeleteAsync<T>(string endpoint)
         {
+            var url = new Uri(_http.BaseAddress, endpoint).ToString();
+            DeviceManagerLogger.LogRequest("DELETE", url);
             var response = await _http.DeleteAsync(endpoint);
-            await EnsureSuccessAsync(response);
-            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+            string resBody = await response.Content.ReadAsStringAsync();
+            DeviceManagerLogger.LogResponse((int)response.StatusCode, url, resBody);
+            await EnsureSuccessAsync(response, resBody);
+            return JsonConvert.DeserializeObject<T>(resBody);
         }
 
         // ─── Helpers ──────────────────────────────────────────────────────────────
 
-        private static async Task EnsureSuccessAsync(HttpResponseMessage response)
+        private static async Task EnsureSuccessAsync(HttpResponseMessage response, string body = null)
         {
             if (!response.IsSuccessStatusCode)
             {
-                var body = await response.Content.ReadAsStringAsync();
+                if (body == null) body = await response.Content.ReadAsStringAsync();
+                DeviceManagerLogger.LogError("API", $"HTTP {(int)response.StatusCode} error: {body}");
                 throw new HttpRequestException(
                     $"DeviceManager API lỗi {(int)response.StatusCode}: {body}");
             }

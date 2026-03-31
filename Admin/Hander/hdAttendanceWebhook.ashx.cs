@@ -4,6 +4,7 @@ using System.IO;
 using System.Web;
 using HLVTimeSheet.Model.DeviceManager;
 using Newtonsoft.Json;
+using static HLVTimeSheet.Model.DeviceManager.DeviceManagerLogger;
 
 namespace HLVTimeSheet.Admin.Hander
 {
@@ -37,6 +38,7 @@ namespace HLVTimeSheet.Admin.Hander
         public void ProcessRequest(HttpContext context)
         {
             Debug.WriteLine($"[Webhook] {DateTime.Now:HH:mm:ss} {context.Request.HttpMethod} {context.Request.Url}");
+            DeviceManagerLogger.Log("WEBHOOK", $"{context.Request.HttpMethod} from {context.Request.UserHostAddress}");
             context.Response.ContentType = "application/json";
             context.Response.Expires     = -1;
 
@@ -56,6 +58,7 @@ namespace HLVTimeSheet.Admin.Hander
                 using (var reader = new StreamReader(context.Request.InputStream))
                     body = reader.ReadToEnd();
                 Debug.WriteLine($"[Webhook] Body: {body}");
+                DeviceManagerLogger.Log("WEBHOOK", $"Body: {body}");
             }
             catch (Exception ex)
             {
@@ -105,6 +108,7 @@ namespace HLVTimeSheet.Admin.Hander
 
                 int statusCode = result.Success ? 200 : 422;
                 Debug.WriteLine($"[Webhook] Result: success={result.Success}, recordId={result.RecordId}, isValid={result.IsValid}, msg={result.Message}");
+                DeviceManagerLogger.Log("WEBHOOK", $"Result: success={result.Success}, recordId={result.RecordId}, isValid={result.IsValid}, msg={result.Message}");
                 context.Response.StatusCode = statusCode;
                 context.Response.Write(Json(new
                 {
@@ -118,6 +122,7 @@ namespace HLVTimeSheet.Admin.Hander
             catch (Exception ex)
             {
                 Debug.WriteLine($"[Webhook] EXCEPTION: {ex.Message}\n{ex.StackTrace}");
+                DeviceManagerLogger.LogError("WEBHOOK", ex.Message, ex);
                 // Trả 500 để DeviceManager tự retry
                 context.Response.StatusCode = 500;
                 context.Response.Write(Json(new

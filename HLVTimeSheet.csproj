@@ -2432,6 +2432,7 @@
     <Compile Include="Model\DeviceManager\DeviceAttendanceImportService.cs" />
     <Compile Include="Model\DeviceManager\DeviceManagerApiClient.cs" />
     <Compile Include="Model\DeviceManager\DeviceManagerConfig.cs" />
+    <Compile Include="Model\DeviceManager\DeviceManagerLogger.cs" />
     <Compile Include="Model\DeviceManager\DeviceManagerModels.cs" />
     <Compile Include="Model\DeviceManager\EmployeeSyncService.cs" />
     <Compile Include="Model\MasterControlModel.cs" />
