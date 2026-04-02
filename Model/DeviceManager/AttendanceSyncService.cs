@@ -433,12 +433,14 @@ namespace HLVTimeSheet.Model.DeviceManager
 
                         ngaySync        DATETIME      DEFAULT GETDATE(),
 
-                        CONSTRAINT UQ_ChamCong_Device_DmLogId UNIQUE (dmLogId)
                     );
                     CREATE INDEX IX_ChamCong_Device_mapNV_thoiGian
                         ON ChamCong_Device (mapNV, thoiGian);
                     CREATE INDEX IX_ChamCong_Device_Valid
                         ON ChamCong_Device (mapNV, thoiGian, isValid, loai);
+                    -- Filtered unique index: chỉ enforce khi dmLogId IS NOT NULL (webhook push để NULL)
+                    CREATE UNIQUE INDEX UQ_ChamCong_Device_DmLogId
+                        ON ChamCong_Device (dmLogId) WHERE dmLogId IS NOT NULL;
                 END
                 ELSE
                 BEGIN
@@ -452,12 +454,24 @@ namespace HLVTimeSheet.Model.DeviceManager
                     BEGIN
                         ALTER TABLE ChamCong_Device DROP CONSTRAINT IF EXISTS UQ_ChamCong_Device_DmLogId;
                         ALTER TABLE ChamCong_Device ALTER COLUMN dmLogId NVARCHAR(100);
-                        IF NOT EXISTS (
-                            SELECT 1 FROM sys.indexes
-                            WHERE name = 'UQ_ChamCong_Device_DmLogId'
-                        )
-                        ALTER TABLE ChamCong_Device
-                            ADD CONSTRAINT UQ_ChamCong_Device_DmLogId UNIQUE (dmLogId);
+                    END
+
+                    -- Migration: đổi UNIQUE CONSTRAINT → filtered UNIQUE INDEX (cho phép nhiều NULL)
+                    IF EXISTS (
+                        SELECT 1 FROM sys.objects
+                        WHERE name = 'UQ_ChamCong_Device_DmLogId' AND type = 'UQ'
+                    )
+                    BEGIN
+                        ALTER TABLE ChamCong_Device DROP CONSTRAINT UQ_ChamCong_Device_DmLogId;
+                    END
+                    IF NOT EXISTS (
+                        SELECT 1 FROM sys.indexes
+                        WHERE name = 'UQ_ChamCong_Device_DmLogId'
+                          AND object_id = OBJECT_ID('ChamCong_Device')
+                    )
+                    BEGIN
+                        CREATE UNIQUE INDEX UQ_ChamCong_Device_DmLogId
+                            ON ChamCong_Device (dmLogId) WHERE dmLogId IS NOT NULL;
                     END
                 END";
 
