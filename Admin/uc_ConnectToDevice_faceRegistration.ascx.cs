@@ -1,4 +1,5 @@
 ﻿using HLVTimeSheet.Model.DeviceManager;
+using static HLVTimeSheet.Model.DeviceManager.DeviceManagerLogger;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -121,7 +122,7 @@ namespace HLVTimeSheet.Admin
                 ).GetAwaiter().GetResult();
 
                 var logMsg = $"RegisterFace [{employeeCode}]: IsSuccess={result?.IsSuccess}, Message={result?.Message}, Duplicates={result?.Duplicates?.Count ?? 0}";
-                WriteLog(logMsg);
+                DeviceManagerLogger.Log("FACE-REG", logMsg);
                 Debug.WriteLine("[DeviceFaceRegister] " + logMsg);
 
                 if (result?.IsSuccess == true)
@@ -144,7 +145,7 @@ namespace HLVTimeSheet.Admin
             }
             catch (Exception ex)
             {
-                WriteLog($"RegisterFace EXCEPTION [{employeeCode}]: {ex}");
+                DeviceManagerLogger.LogError("FACE-REG", $"RegisterFace [{employeeCode}]", ex);
                 Debug.WriteLine($"[DeviceFaceRegister] RegisterFace EXCEPTION [{employeeCode}]: {ex}");
                 lblResult.Text = Alert("danger", $"Lỗi kết nối DeviceManager: {HttpUtility.HtmlEncode(ex.Message)}");
             }
@@ -163,7 +164,7 @@ namespace HLVTimeSheet.Admin
                 var svc = new EmployeeSyncService();
                 bool ok = Task.Run(async () => await svc.DeleteEmployeeAsync(code)).GetAwaiter().GetResult();
                 var logMsg = $"DeleteFace [{code}]: ok={ok}";
-                WriteLog(logMsg);
+                DeviceManagerLogger.Log("FACE-REG", logMsg);
                 Debug.WriteLine("[DeviceFaceRegister] " + logMsg);
                 lblRemoveResult.Text = ok
                     ? Alert("success", $"Đã xóa khuôn mặt của <strong>{HttpUtility.HtmlEncode(code)}</strong> khỏi DeviceManager.")
@@ -171,7 +172,7 @@ namespace HLVTimeSheet.Admin
             }
             catch (Exception ex)
             {
-                WriteLog($"DeleteFace EXCEPTION [{code}]: {ex.Message}");
+                DeviceManagerLogger.LogError("FACE-REG", $"DeleteFace [{code}]", ex);
                 Debug.WriteLine($"[DeviceFaceRegister] DeleteFace EXCEPTION [{code}]: {ex.Message}");
                 lblRemoveResult.Text = Alert("danger", $"Lỗi: {HttpUtility.HtmlEncode(ex.Message)}");
             }
@@ -268,17 +269,6 @@ namespace HLVTimeSheet.Admin
         private static string Alert(string type, string msg)
             => $"<div class='alert alert-{type} mt-2'>{msg}</div>";
 
-        private void WriteLog(string message)
-        {
-            try
-            {
-                string logDir = Server.MapPath("~/App_Data/logs");
-                if (!Directory.Exists(logDir)) Directory.CreateDirectory(logDir);
-                string logFile = Path.Combine(logDir, $"device_{DateTime.Today:yyyyMMdd}.log");
-                string line = $"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}";
-                File.AppendAllText(logFile, line, Encoding.UTF8);
-            }
-            catch { /* không để log lỗi làm crash app */ }
-        }
+
     }
 }

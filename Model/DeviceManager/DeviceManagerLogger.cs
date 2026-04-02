@@ -1,5 +1,4 @@
 using System;
-using System.Configuration;
 using System.IO;
 using System.Web;
 
@@ -7,15 +6,13 @@ namespace HLVTimeSheet.Model.DeviceManager
 {
     /// <summary>
     /// Ghi log ra file App_Data/logs/devicemanager_YYYY-MM-DD.log
-    /// Bật/tắt qua Web.config: <add key="DeviceManager_EnableFileLog" value="true" />
+    /// Log luôn bật.
     /// </summary>
     public static class DeviceManagerLogger
     {
         private static readonly object _lock = new object();
 
-        public static bool IsEnabled =>
-            string.Equals(ConfigurationManager.AppSettings["DeviceManager_EnableFileLog"],
-                          "true", StringComparison.OrdinalIgnoreCase);
+        public static bool IsEnabled => true;
 
         public static void Log(string category, string message)
         {

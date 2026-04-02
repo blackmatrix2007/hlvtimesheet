@@ -1,4 +1,5 @@
 ﻿using HLVTimeSheet.Model.DeviceManager;
+using static HLVTimeSheet.Model.DeviceManager.DeviceManagerLogger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,15 +40,18 @@ namespace HLVTimeSheet.Admin
 
         private async Task PullAsync()
         {
+            DeviceManagerLogger.Log("PULL", $"Start: {txtFrom.Text} → {txtTo.Text}");
             try
             {
                 var svc = new AttendanceSyncService();
                 int saved = await svc.PullAndSaveAsync(txtFrom.Text, txtTo.Text);
+                DeviceManagerLogger.Log("PULL", $"OK: saved={saved}");
                 lblPullResult.Text =
                     $"<div class='alert alert-success'>Đã lưu/cập nhật <strong>{saved}</strong> bản ghi chấm công.</div>";
             }
             catch (Exception ex)
             {
+                DeviceManagerLogger.LogError("PULL", $"{txtFrom.Text}→{txtTo.Text}", ex);
                 lblPullResult.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
             }
         }
@@ -103,6 +107,7 @@ namespace HLVTimeSheet.Admin
 
         private async Task LoadTodayAsync()
         {
+            DeviceManagerLogger.Log("TODAY", "Start");
             try
             {
                 var svc = new AttendanceSyncService();
@@ -139,6 +144,7 @@ namespace HLVTimeSheet.Admin
             }
             catch (Exception ex)
             {
+                DeviceManagerLogger.LogError("TODAY", "GetTodaySummary failed", ex);
                 litToday.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
             }
         }
@@ -217,6 +223,7 @@ namespace HLVTimeSheet.Admin
 
         private async Task LoadViewLogsAsync()
         {
+            DeviceManagerLogger.Log("VIEW-LOGS", $"Start: {txtViewFrom.Text} → {txtViewTo.Text}");
             try
             {
                 var svc = new AttendanceSyncService();
@@ -270,6 +277,7 @@ namespace HLVTimeSheet.Admin
             }
             catch (Exception ex)
             {
+                DeviceManagerLogger.LogError("VIEW-LOGS", $"{txtViewFrom.Text}→{txtViewTo.Text}", ex);
                 litViewLogs.Text = $"<div class='alert alert-danger'>Lỗi: {HttpUtility.HtmlEncode(ex.Message)}</div>";
             }
         }
@@ -283,6 +291,7 @@ namespace HLVTimeSheet.Admin
 
         private async Task LoadEmployeesAsync()
         {
+            DeviceManagerLogger.Log("EMP-LIST", "Start");
             try
             {
                 var svc = new EmployeeSyncService();
@@ -310,6 +319,7 @@ namespace HLVTimeSheet.Admin
             }
             catch (Exception ex)
             {
+                DeviceManagerLogger.LogError("EMP-LIST", "GetAllEmployeesFromDevice failed", ex);
                 litEmployees.Text = $"<div class='alert alert-danger'>Lỗi: {ex.Message}</div>";
             }
         }

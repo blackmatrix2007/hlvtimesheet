@@ -1,5 +1,6 @@
 ﻿using HLVTimeSheet.AcsessData;
 using HLVTimeSheet.Model.DeviceManager;
+using static HLVTimeSheet.Model.DeviceManager.DeviceManagerLogger;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -73,6 +74,7 @@ namespace HLVTimeSheet.Admin
                 return;
             }
 
+            DeviceManagerLogger.Log("SETTINGS", $"BtnSave: baseUrl={txtBaseUrl.Text.Trim()}");
             try
             {
                 var conn = new ConnectionDatabase();
@@ -135,10 +137,12 @@ namespace HLVTimeSheet.Admin
                     }
                 }
 
+                DeviceManagerLogger.Log("SETTINGS", "Save OK");
                 lblMsg.Text = Alert("success", "Đã lưu cấu hình thành công.");
             }
             catch (Exception ex)
             {
+                DeviceManagerLogger.LogError("SETTINGS", "Save failed", ex);
                 lblMsg.Text = Alert("danger", $"Lỗi lưu cấu hình: {ex.Message}");
             }
         }
@@ -172,6 +176,7 @@ namespace HLVTimeSheet.Admin
             }
             catch (Exception ex)
             {
+                DeviceManagerLogger.LogError("SETTINGS", "TestEmail failed", ex);
                 lblMsg.Text = Alert("danger", $"Gửi email thất bại: {ex.Message}");
             }
         }
