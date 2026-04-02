@@ -341,19 +341,23 @@ namespace HLVTimeSheet.Model.DeviceManager
 
         private static int InsertAttendanceLog(SqlConnection conn, ChamCongDeviceRecord r)
         {
+            // Webhook push không có dmLogId → tự sinh UUID để tránh lỗi UNIQUE NULL
+            string dmLogId = "webhook-" + Guid.NewGuid().ToString();
+
             const string sql = @"
                 INSERT INTO ChamCong_Device
-                    (mapNV, loai, thoiGian, deviceId, deviceName, diemTin,
+                    (dmLogId, mapNV, loai, thoiGian, deviceId, deviceName, diemTin,
                      latitude, longitude, gpsAccuracy,
                      isValid, isDuplicate, attemptNumber, rejectionReason, source)
                 OUTPUT INSERTED.pk_seq
                 VALUES
-                    (@mapNV, @loai, @thoiGian, @deviceId, @deviceName, @diemTin,
+                    (@dmLogId, @mapNV, @loai, @thoiGian, @deviceId, @deviceName, @diemTin,
                      @latitude, @longitude, @gpsAccuracy,
                      @isValid, @isDuplicate, @attemptNumber, @rejectionReason, @source)";
 
             using (var cmd = new SqlCommand(sql, conn))
             {
+                cmd.Parameters.AddWithValue("@dmLogId",         dmLogId);
                 cmd.Parameters.AddWithValue("@mapNV",           r.MapNV);
                 cmd.Parameters.AddWithValue("@loai",            r.Loai);
                 cmd.Parameters.AddWithValue("@thoiGian",        r.ThoiGian);
