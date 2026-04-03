@@ -91,7 +91,7 @@ namespace HLVTimeSheet.Model.DeviceManager
                         MapNV           = dto.EmployeeCode,
                         Loai            = laVao ? "check_in" : "check_out",
                         ThoiGian        = thoiGian,
-                        DeviceId        = dto.DeviceId?.ToString(),
+                        DeviceId        = dto.DeviceId,
                         DeviceName      = dto.DeviceName,
                         DiemTin         = dto.FaceConfidence,
                         Latitude        = dto.Latitude,

@@ -78,6 +78,7 @@ namespace HLVTimeSheet.Admin.Hander
             catch (Exception ex)
             {
                 Debug.WriteLine($"[Webhook] JSON parse lỗi: {ex.Message}");
+                DeviceManagerLogger.LogError("WEBHOOK", "JSON parse failed", ex);
                 context.Response.StatusCode = 400;
                 context.Response.Write(Json(new { success = false, message = "JSON không hợp lệ: " + ex.Message }));
                 return;

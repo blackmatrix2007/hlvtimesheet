@@ -226,7 +226,7 @@ namespace HLVTimeSheet.Model.DeviceManager
         public string DeviceName { get; set; }
 
         [JsonProperty("deviceId")]
-        public int? DeviceId { get; set; }
+        public string DeviceId { get; set; }
 
         [JsonProperty("latitude")]
         public double? Latitude { get; set; }
