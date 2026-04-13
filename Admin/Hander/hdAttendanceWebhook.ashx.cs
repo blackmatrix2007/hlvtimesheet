@@ -110,6 +110,27 @@ namespace HLVTimeSheet.Admin.Hander
                 int statusCode = result.Success ? 200 : 422;
                 Debug.WriteLine($"[Webhook] Result: success={result.Success}, recordId={result.RecordId}, isValid={result.IsValid}, msg={result.Message}");
                 DeviceManagerLogger.Log("WEBHOOK", $"Result: success={result.Success}, recordId={result.RecordId}, isValid={result.IsValid}, msg={result.Message}");
+
+                // Auto-import vào ChamCong khi webhook hợp lệ
+                if (result.Success && result.IsValid)
+                {
+                    DateTime.TryParse(dto.CheckingTime, out DateTime thoiGianLocal);
+                    thoiGianLocal = thoiGianLocal.ToLocalTime();
+                    try
+                    {
+                        var importSvc = new DeviceAttendanceImportService();
+                        var importResult = importSvc.ImportRange(thoiGianLocal.Date, thoiGianLocal.Date, nguoiTao: "webhook-auto");
+                        Debug.WriteLine($"[Webhook] AutoImport: processed={importResult.Processed}, succeeded={importResult.Succeeded}, skipped={importResult.Skipped}");
+                        DeviceManagerLogger.Log("WEBHOOK", $"AutoImport {thoiGianLocal:dd/MM/yyyy}: processed={importResult.Processed}, succeeded={importResult.Succeeded}, skipped={importResult.Skipped}, errors={importResult.Errors.Count}");
+                    }
+                    catch (Exception importEx)
+                    {
+                        Debug.WriteLine($"[Webhook] AutoImport EXCEPTION: {importEx.Message}");
+                        DeviceManagerLogger.LogError("WEBHOOK", "AutoImport failed", importEx);
+                        // Không để lỗi import ảnh hưởng response webhook
+                    }
+                }
+
                 context.Response.StatusCode = statusCode;
                 context.Response.Write(Json(new
                 {
