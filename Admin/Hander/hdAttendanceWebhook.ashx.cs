@@ -122,6 +122,8 @@ namespace HLVTimeSheet.Admin.Hander
                         var importResult = importSvc.ImportRange(thoiGianLocal.Date, thoiGianLocal.Date, nguoiTao: "webhook-auto");
                         Debug.WriteLine($"[Webhook] AutoImport: processed={importResult.Processed}, succeeded={importResult.Succeeded}, skipped={importResult.Skipped}");
                         DeviceManagerLogger.Log("WEBHOOK", $"AutoImport {thoiGianLocal:dd/MM/yyyy}: processed={importResult.Processed}, succeeded={importResult.Succeeded}, skipped={importResult.Skipped}, errors={importResult.Errors.Count}");
+                        foreach (var err in importResult.Errors)
+                            DeviceManagerLogger.Log("WEBHOOK", $"  AutoImport error: {err}");
                     }
                     catch (Exception importEx)
                     {
