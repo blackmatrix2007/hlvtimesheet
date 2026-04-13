@@ -165,9 +165,25 @@
                  </div>
                  <a href="TimeSheet.aspx?func=301&action=capnhat&depa=100013" class="small-box-footer">Detail <i class="fa fa-arrow-circle-right"></i></a>
                  </div>
-             </div><!-- ./col -->
-           
+             </div><!-- ./col -->           
          </div>
+
+          <div class="row"> 
+            <div class="col-lg-3 col-xs-6">
+                <!-- small box -->
+                <div class="small-box bg-olive">
+                <div class="inner">                    
+                    <p>All</p>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-ios-color-filter-outline"></i>
+                </div>
+                <a href="TimeSheet.aspx?func=301&action=capnhat&depa=0" class="small-box-footer">Detail <i class="fa fa-arrow-circle-right"></i></a>
+                </div>
+            </div><!-- ./col -->
+
+        </div>
+
     </div>
 
 </div>

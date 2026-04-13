@@ -144,7 +144,8 @@
                             <div class="col-xs-12 col-sm-9 col-lg-10" style="margin-top:10px;">  
                                 <asp:DropDownList ID="ddlPhongBanShow" runat="server" Width="100%" CssClass='form-control clearBoder' readonly="readonly"></asp:DropDownList>
                             </div>               
-                        </div>                     
+                        </div> 
+                       
                        <div class="row" style="display:none;">
                             <div class="col-xs-12 col-sm-3 col-lg-2" style="margin-top:10px;"><%if (language.Equals("1")){ %> Start date <%} else if (language.Equals("2")) { %> Ngày bắt đầu làm <%} %></div>
                             <div class="col-xs-12 col-sm-9 col-lg-10" style="margin-top:10px;">                                 
@@ -165,6 +166,12 @@
                                  <asp:TextBox ID="txtNgayNhapShow" runat="server" Width="100%" CssClass='form-control' ReadOnly="true"></asp:TextBox>
                              </div>
                          </div>
+
+                        <div class="row">
+                        <div class="col-xs-12 col-sm-3 col-lg-2" style="margin-top:10px;"><%if (language.Equals("1")){ %> Status <%} else if (language.Equals("2")) { %> Trạng thái <%} %></div>
+                        <div class="col-xs-12 col-sm-9 col-lg-10" style="margin-top:10px;">  
+                            <asp:DropDownList ID="ddlTrangThai" runat="server" Width="100%" CssClass='form-control'></asp:DropDownList>
+                        </div>    
 
                        <div class="row">
                            <div class="col-xs-12 col-sm-3 col-lg-2" style="margin-top:10px;"><%if (language.Equals("1")){ %> Check in <%} else if (language.Equals("2")) { %> Check in <%} %></div>
@@ -190,6 +197,27 @@
                         <div class="overlay-text" style="text-align:center;">Check out</div>
                     </div>
                 </div>
+
+                 <div class="col-xs-12 col-sm-12 col-lg-12" style="display:none;"> 
+                     <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"> 
+                        <asp:TextBox ID="txtHinhAnhIn" runat="server" Width="100%" CssClass='form-control' ReadOnly="true"></asp:TextBox>
+                     </div>
+
+                     <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"> 
+                        <asp:TextBox ID="txtHinhAnhOut" runat="server" Width="100%" CssClass='form-control' ReadOnly="true"></asp:TextBox>
+                     </div>
+                 </div>
+
+                <div class="col-xs-12 col-sm-12 col-lg-12" style="display:none;"> 
+                    <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"> 
+                       <asp:TextBox ID="txtIDMayCheckIn" runat="server" Width="100%" CssClass='form-control' ReadOnly="true"></asp:TextBox>
+                    </div>
+
+                    <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"> 
+                       <asp:TextBox ID="txtIDMayCheckOut" runat="server" Width="100%" CssClass='form-control' ReadOnly="true"></asp:TextBox>
+                    </div>
+                </div>
+
 		    </div>
 
             <div id='control02' class="modal-footer" style="margin-top:10px;">
@@ -245,11 +273,17 @@
                     document.getElementById("<%= txtTen.ClientID %>").value = arr[1];
 
                     document.getElementById("<%= txtNgayBatDauLam.ClientID %>").value = arr[7];
-                    
+                    document.getElementById("<%= ddlTrangThai.ClientID %>").value = arr[8];
                     document.getElementById("<%= ddlChiNhanh.ClientID %>").value = arr[9];
                     document.getElementById("<%= ddlPhongBanShow.ClientID %>").value = arr[10];
                     document.getElementById("<%= ddlPhongBanSupport.ClientID %>").value = arr[11];
                     document.getElementById("<%= ddlChucVu.ClientID %>").value = arr[12];
+
+                    document.getElementById("<%= txtHinhAnhIn.ClientID %>").value = arr[18];
+                    document.getElementById("<%= txtHinhAnhOut.ClientID %>").value = arr[19];
+
+                    document.getElementById("<%= txtIDMayCheckIn.ClientID %>").value = arr[20];
+                    document.getElementById("<%= txtIDMayCheckOut.ClientID %>").value = arr[21];
 
                     var gioIn = arr[13];
                     var phutIn = arr[14];
@@ -257,7 +291,7 @@
                     var phutOut = arr[16];
                     var hinhanhIn = arr[18];
                     var hinhanhOut = arr[19];
-
+                    
                     if (gioIn.length < 2)
                         gioIn = "0" + gioIn;
                     if (phutIn.length < 2)
@@ -271,7 +305,6 @@
                         hinhanhIn = "avatardefault.png";
                     if (hinhanhOut.length < 3)
                         hinhanhOut = "avatardefault.png";
-
                     document.getElementById("<%= ddlGioStart.ClientID %>").value = gioIn;
                     document.getElementById("<%= ddlPhutStart.ClientID %>").value = phutIn;
                     document.getElementById("<%= ddlGioEnd.ClientID %>").value = gioOut;
@@ -291,19 +324,24 @@
         var nhansu = document.getElementById("<%= txtNhanSu.ClientID %>").value;        
         var phongban = document.getElementById("<%= ddlPhongBanShow.ClientID %>").value;
         var ngaynhap = document.getElementById("<%= txtNgayNhapShow.ClientID %>").value;
+        var trangthai = document.getElementById("<%= ddlTrangThai.ClientID %>").value;
         var gioIn = document.getElementById("<%= ddlGioStart.ClientID %>").value;
         var phutIn = document.getElementById("<%= ddlPhutStart.ClientID %>").value;
         var gioOut = document.getElementById("<%= ddlGioEnd.ClientID %>").value;
         var phutOut = document.getElementById("<%= ddlPhutEnd.ClientID %>").value;
-        
-        $.post("Hander/hdTimeKeeping.ashx?action=saveInforCheckIn&nhansu=" + nhansu + "&ngaynhap=" + ngaynhap + "&phongban=" + phongban +
-            "&gioIn=" + gioIn + "&phutIn=" + phutIn + "&gioOut=" + gioOut + "&phutOut=" + phutOut,
+        var hinhanhIn = document.getElementById("<%= txtHinhAnhIn.ClientID %>").value;
+        var hinhanhOut = document.getElementById("<%= txtHinhAnhOut.ClientID %>").value;
+        var idMayCheckIn = document.getElementById("<%= txtIDMayCheckIn.ClientID %>").value;
+        var idMayCheckOut = document.getElementById("<%= txtIDMayCheckOut.ClientID %>").value;
+
+        $.post("Hander/hdTimeKeeping.ashx?action=saveInforCheckIn&nhansu=" + nhansu + "&ngaynhap=" + ngaynhap + "&phongban=" + phongban + "&trangthai=" + trangthai +
+            "&gioIn=" + gioIn + "&phutIn=" + phutIn + "&gioOut=" + gioOut + "&phutOut=" + phutOut + "&hinhanhIn=" + hinhanhIn + "&hinhanhOut=" + hinhanhOut + "&idMayCheckIn=" + idMayCheckIn + "&idMayCheckOut=" + idMayCheckOut,
             function (result) {
                 if (result.length < 10) {
 
                     $('.showInforStaff').css("display", "none");
 
-                    window.location("TimeSheet.aspx?func=301&action=capnhat&depa=" + phongban);
+                    window.location.replace("TimeSheet.aspx?func=301&action=capnhat&depa=" + phongban);
 
                 }
                 else

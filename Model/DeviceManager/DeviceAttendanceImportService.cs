@@ -49,6 +49,8 @@ namespace HLVTimeSheet.Model.DeviceManager
                 string mapNV      = row["mapNV"].ToString();
                 string nhansuFk   = row["nhansuFk"].ToString();
                 string phongbanFk = row["phongbanFk"].ToString();
+                string loaiCheck = row["loai"].ToString();
+                string deviceId = row["deviceId"].ToString();
 
                 Debug.WriteLine($"[Import] Row: mapNV={mapNV}, nhansuFk={nhansuFk}, phongbanFk={phongbanFk}, gioVao={row["gioVao"]}, gioRa={row["gioRa"]}");
 
@@ -78,6 +80,25 @@ namespace HLVTimeSheet.Model.DeviceManager
                     phutOut = gr.Minute.ToString("D2");
                 }
 
+                string mayCheckIn = "";
+                string mayCheckOut = "";
+            
+                switch (loaiCheck)
+                {
+                    case "check_in":
+                        loaiCheck = "1";
+                        mayCheckIn = deviceId;
+                        break;
+                    case "check_out":
+                        loaiCheck = "2";
+                        mayCheckOut = deviceId;
+                        break;
+                    default:
+                        loaiCheck = "1";
+                        break;
+
+                }    
+
                 // Ngày dạng dd-MM-yyyy (format lưu trong ChamCong)
                 string ngayStr = ngay.ToString("dd-MM-yyyy");
 
@@ -94,16 +115,20 @@ namespace HLVTimeSheet.Model.DeviceManager
                 try
                 {
                     string kq = tkCtrl.INSERT_TimeKeeping_New(
-                        ngaynhap:    ngayStr,
+                        ngaynhap: ngayStr,
                         phongban_fk: phongbanFk,
-                        nhansu_fk:   nhansuFk,
-                        gioIn:       gioIn,
-                        phutIn:      phutIn,
-                        gioOut:      gioOut,
-                        phutOut:     phutOut,
-                        loai:        "1",
-                        trangthai:   "1",
-                        nguoitao:    nguoiTao);
+                        nhansu_fk: nhansuFk,
+                        gioIn: gioIn,
+                        phutIn: phutIn,
+                        gioOut: gioOut,
+                        phutOut: phutOut,
+                        loai: loaiCheck,
+                        trangthai: "1",
+                        hinhanhIn: "",
+                        hinhanhOut: "",
+                        idMayCheckIn: mayCheckIn,
+                        idMayCheckOut: mayCheckOut,
+                        nguoitao: nguoiTao);
 
                     if (string.IsNullOrEmpty(kq))
                     {
@@ -226,11 +251,12 @@ namespace HLVTimeSheet.Model.DeviceManager
                         ns.pk_seq                                                           AS nhansuFk,
                         ISNULL(CAST(ns.phongban_fk AS NVARCHAR(50)), '')                    AS phongbanFk,
                         MIN(CASE WHEN cd.loai='check_in'  AND cd.isValid=1 THEN cd.thoiGian END) AS gioVao,
-                        MAX(CASE WHEN cd.loai='check_out' AND cd.isValid=1 THEN cd.thoiGian END) AS gioRa
+                        MAX(CASE WHEN cd.loai='check_out' AND cd.isValid=1 THEN cd.thoiGian END) AS gioRa, 
+                        cd.deviceId, cd.loai 
                     FROM ChamCong_Device cd
-                    LEFT JOIN DanhSachNhanSu ns ON ns.ma = cd.mapNV AND ns.trangthai = 1
+                    LEFT JOIN DanhSachNhanSu ns ON ns.ma = cd.mapNV AND ns.trangthai = 1 AND CAST(cd.thoiGian AS DATE) = @ngay 
                     WHERE CAST(cd.thoiGian AS DATE) = @ngay
-                    GROUP BY cd.mapNV, ns.pk_seq, ns.phongban_fk
+                    GROUP BY cd.mapNV, cd.deviceId, cd.loai, ns.pk_seq, ns.phongban_fk
                     ORDER BY cd.mapNV";
 
                 using (var cmd = new SqlCommand(sql, sqlConn))

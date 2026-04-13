@@ -195,6 +195,15 @@ namespace HLVTimeSheet.Admin
         protected global::System.Web.UI.WebControls.TextBox txtNgayNhapShow;
 
         /// <summary>
+        /// ddlTrangThai control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlTrangThai;
+
+        /// <summary>
         /// ddlGioStart control.
         /// </summary>
         /// <remarks>
@@ -256,5 +265,41 @@ namespace HLVTimeSheet.Admin
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl divImageCheckOut;
+
+        /// <summary>
+        /// txtHinhAnhIn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtHinhAnhIn;
+
+        /// <summary>
+        /// txtHinhAnhOut control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtHinhAnhOut;
+
+        /// <summary>
+        /// txtIDMayCheckIn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtIDMayCheckIn;
+
+        /// <summary>
+        /// txtIDMayCheckOut control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtIDMayCheckOut;
     }
 }

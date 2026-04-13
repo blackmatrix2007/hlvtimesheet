@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.Remoting.Lifetime;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -99,7 +100,14 @@ namespace HLVTimeSheet.Admin
                         str = "0" + str;
                     ddlThang.Items.Add(new ListItem(str.ToString(), str));
                 }
-               
+
+                ddlTrangThai.Items.Add(new ListItem("", "0"));
+                ddlTrangThai.Items.Add(new ListItem("Full time", "1"));
+                ddlTrangThai.Items.Add(new ListItem("Hafl time", "2"));
+                ddlTrangThai.Items.Add(new ListItem("Approved leave", "3"));
+                ddlTrangThai.Items.Add(new ListItem("AB", "4"));
+                ddlTrangThai.Items.Add(new ListItem("Late arrival", "5"));
+
                 ddlNam.SelectedValue = DateTime.Now.ToString("yyyy");
                 ddlThang.SelectedValue = DateTime.Now.ToString("MM");
 
@@ -233,7 +241,7 @@ namespace HLVTimeSheet.Admin
 
             txtNgayNhap.Value = today;
 
-            sql = " SELECT ROW_NUMBER() OVER(ORDER BY a.ten ASC) AS stt, a.pk_seq AS nhansu_fk, a.ma, a.ten, a.hinhanh " +
+            sql = " SELECT ROW_NUMBER() OVER(ORDER BY a.capbac ASC) AS stt, a.pk_seq AS nhansu_fk, a.ma, a.ten, a.hinhanh, a.capbac " +
                 " FROM DanhSachNhanSu a " +
                 " WHERE a.trangthai in (1) " + condition;
 
@@ -263,12 +271,18 @@ namespace HLVTimeSheet.Admin
                 denDONG = pageID * soDONG;
             }
 
-            string queryCHITIET = " SELECT * FROM ( " + sql + " ) DH WHERE DH.stt >= " + tuDONG.ToString() + " and DH.stt <= " + denDONG.ToString() + " ORDER BY DH.ten ";
+            string queryCHITIET = " SELECT * FROM ( " + sql + " ) DH WHERE DH.stt >= " + tuDONG.ToString() + " and DH.stt <= " + denDONG.ToString() + " ORDER BY DH.capbac, DH.ten ";
 
             DataTable dt = xl.ReadTable(queryCHITIET);
 
             for (int z = 0; z < dt.Rows.Count; z++)
             {
+                int songayFulltime = 0;
+                int songayHafltime = 0;
+                int songayApprovedLeave = 0;
+                int songayAB = 0;
+                int songayLateArrival = 0;
+
                 string nhansu_fk = dt.Rows[z]["nhansu_fk"].ToString();
                 string hinhanh = dt.Rows[z]["hinhanh"].ToString();
                 if (hinhanh.Length < 3)
@@ -289,9 +303,9 @@ namespace HLVTimeSheet.Admin
                 foreach (string _ngaynhap in listDate)
                 {
                     info = "";
-                    string textNoteLate = "No data";
-                    string textNoteOT = "No data";
-
+                    string textNoteLate = ".";
+                    string textNoteOT = ".";
+                    string trangthai = "";
                     string thoigian = "";
                     string thoigianIn = "";
                     string thoigianOut = "";
@@ -305,14 +319,15 @@ namespace HLVTimeSheet.Admin
                     int phutIn = 0;
                     int phutOut = 0;
 
-                    sql = " SELECT b.nhansu_fk, b.thoigian, b.loai, b.gio, b.phut, b.gioStart, b.phutStart, b.gioEnd, b.phutEnd " +
-                        " FROM ChamCong a INNER JOIN ChamCong_ChiTiet b ON a.pk_seq = b.chamcong_fk AND b.trangthai in (1) AND a.nhansu_fk = '" + nhansu_fk + "' AND a.ngaynhap = '" + _ngaynhap + "' " + 
+                    sql = " SELECT a.trangthai, b.nhansu_fk, b.thoigian, b.loai, b.gio, b.phut, b.gioStart, b.phutStart, b.gioEnd, b.phutEnd " +
+                        " FROM ChamCong a INNER JOIN ChamCong_ChiTiet b ON a.pk_seq = b.chamcong_fk AND b.trangthai in (1, 2, 3, 4, 5) AND a.nhansu_fk = '" + nhansu_fk + "' AND a.ngaynhap = '" + _ngaynhap + "' " + 
                         " ORDER BY loai, gio, phut ASC ";
                     DataTable dtK = xl.ReadTable(sql);
                     for (int i = 0; i < dtK.Rows.Count; i++)
                     {
                         string loai = dtK.Rows[i]["loai"].ToString();
-                        
+                        trangthai = dtK.Rows[i]["trangthai"].ToString();
+
                         gioStart = int.Parse(dtK.Rows[i]["gioStart"].ToString());
                         gioEnd = int.Parse(dtK.Rows[i]["gioEnd"].ToString());
                         phutStart = int.Parse(dtK.Rows[i]["phutStart"].ToString());
@@ -333,12 +348,16 @@ namespace HLVTimeSheet.Admin
                             default:
                                 break;
                         }
+
+
                     }
 
                     thoigian = thoigianIn + "-" + thoigianOut;
                     if (thoigian.Length < 2)
                     {
-                        thoigian = "No data";                        
+                        thoigian = "NO DATA";
+                        textNoteLate = "NO DATA";
+                        textNoteOT = "NO DATA";
                         styleTextDay = "color:white;";
                     }
                     else
@@ -346,7 +365,7 @@ namespace HLVTimeSheet.Admin
                         styleTextDay = "color:black;";
                     }
 
-                        double valueIn = gioStart * 60 + phutStart;
+                    double valueIn = gioStart * 60 + phutStart;
                     double valueOut = gioEnd * 60 + phutEnd;
 
                     double actualIn = gioIn * 60 + phutIn;
@@ -354,20 +373,52 @@ namespace HLVTimeSheet.Admin
 
                     double chenhlechIn = 0;
                     double chenhlechOut = 0;
-                    if (actualIn > valueIn)
+                    
+                    switch(trangthai)
                     {
-                        chenhlechIn = Math.Round((actualIn - valueIn) / 6, 1);
-                        textNoteLate = "Late: " + chenhlechIn.ToString();
-                        styleDay = "background-color: lightgray;";
-
-                    }
-
-                    if(actualOut > valueOut)
-                    {
-                        chenhlechOut = Math.Round((actualOut - valueOut) / 6, 1);
-                        textNoteOT = "OT: " + chenhlechOut;
-                        styleDay = "background-color: lightgreen;";
-                    }
+                        case "1":
+                            if (actualIn > valueIn)
+                            {
+                                chenhlechIn = Math.Round((actualIn - valueIn) / 60, 1);
+                                textNoteLate = "Late: " + chenhlechIn.ToString();
+                            }
+                            if (actualOut > valueOut)
+                            {
+                                chenhlechOut = Math.Round((actualOut - valueOut) / 60, 1);
+                                textNoteOT = "OT: " + chenhlechOut;
+                            }
+                            styleDay = "background-color: lightgreen;";
+                            songayFulltime++;
+                            break;
+                        case "2":
+                            styleDay = "background-color: yellow;";
+                            songayHafltime++;
+                            break;
+                        case "3":
+                            styleDay = "background-color: orange;";
+                            songayApprovedLeave++;
+                            break;
+                        case "4":
+                            styleDay = "background-color: orangered;";
+                            songayAB++;
+                            break;
+                        case "5":
+                            if (actualIn > valueIn)
+                            {
+                                chenhlechIn = Math.Round((actualIn - valueIn) / 60, 1);
+                                textNoteLate = "Late: " + chenhlechIn.ToString();
+                            }
+                            if (actualOut > valueOut)
+                            {
+                                chenhlechOut = Math.Round((actualOut - valueOut) / 60, 1);
+                                textNoteOT = "OT: " + chenhlechOut;
+                            }                            
+                            styleDay = "background-color: lightgray;";
+                            songayLateArrival++;
+                            break;
+                        default:
+                            break;
+                    }    
 
                     // Xác định tình trạng ngày làm việc
                     info = "<div style='text-align:center; float:left; width:100%; height:33.3%;" + styleDay + "'><a href='javascript:void(0);' " + styleDay + "  data-toggle='modal' data-target='#exampleModal' data-whatever='" + _ngaynhap + "--" + nhansu_fk + "' style='font-size:smaller;" + styleTextDay + "'>" + thoigian + "</a></div>";
@@ -378,7 +429,14 @@ namespace HLVTimeSheet.Admin
                     styleDay = "";
                     info = "";
                 }
-                content += " <td style='text-align:left; border:1px solid black; padding:1px; height:28px; font-size:small;'></td>";
+                info = "";
+                info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: lightgreen;'>" + songayFulltime.ToString() + "</div>";
+                info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: yellow;'>" + songayHafltime.ToString() + "</div>";
+                info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: orange;'>" + songayApprovedLeave.ToString() + "</div>";
+                info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: orangered;'>" + songayAB.ToString() + "</div>";
+                info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: lightgray;'>" + songayLateArrival.ToString() + "</div>";
+                info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: white;'></div>";
+                content += " <td style='text-align:left; border:1px solid black; padding:1px; height:28px; font-size:small;'>" + info + "</td>";
                 content += "</tr>";
             }
             ltInfor.Text += title;

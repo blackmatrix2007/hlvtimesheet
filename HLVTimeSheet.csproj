@@ -110,7 +110,6 @@
     <Content Include="Admin\DeviceFaceRegister.aspx" />
     <Content Include="Admin\DeviceSettings.aspx" />
     <Content Include="Admin\DeviceSync.aspx" />
-    <Content Include="Admin\DeviceSync1.aspx" />
     <Content Include="Admin\Homepage.aspx" />
     <Content Include="Admin\Index.aspx" />
     <Content Include="Admin\LayoutMonthTimeSheet.aspx" />
@@ -1985,13 +1984,6 @@
     </Compile>
     <Compile Include="Admin\DeviceSync.aspx.designer.cs">
       <DependentUpon>DeviceSync.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Admin\DeviceSync1.aspx.cs">
-      <DependentUpon>DeviceSync1.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Admin\DeviceSync1.aspx.designer.cs">
-      <DependentUpon>DeviceSync1.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\Diagram.Master.cs">
       <DependentUpon>Diagram.Master</DependentUpon>

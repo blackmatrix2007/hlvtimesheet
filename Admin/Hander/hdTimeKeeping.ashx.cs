@@ -37,13 +37,22 @@ namespace HLVTimeSheet.Admin.Hander
             string ngaynhap = "";
             string phongban = "";
             string nhansu = "";
+            string trangthai = "";
             string gioIn = "";
             string phutIn = "";
             string gioOut = "";
             string phutOut = "";
 
+            string hinhanhIn = "";
+            string hinhanhOut = "";
+            string idMayCheckIn = "";
+            string idMayCheckOut = "";
+
             if (context.Request.QueryString["ngaynhap"] != null)
                 ngaynhap = context.Request.QueryString["ngaynhap"].ToString();
+
+            if (context.Request.QueryString["trangthai"] != null)
+                trangthai = context.Request.QueryString["trangthai"].ToString();
 
             if (context.Request.QueryString["phongban"] != null)
                 phongban = context.Request.QueryString["phongban"].ToString();
@@ -62,7 +71,19 @@ namespace HLVTimeSheet.Admin.Hander
 
             if (context.Request.QueryString["phutOut"] != null)
                 phutOut = context.Request.QueryString["phutOut"].ToString();
-            
+
+            if (context.Request.QueryString["hinhanhIn"] != null)
+                hinhanhIn = context.Request.QueryString["hinhanhIn"].ToString();
+
+            if (context.Request.QueryString["hinhanhOut"] != null)
+                hinhanhOut = context.Request.QueryString["hinhanhOut"].ToString();
+
+            if (context.Request.QueryString["idMayCheckIn"] != null)
+                idMayCheckIn = context.Request.QueryString["idMayCheckIn"].ToString();
+
+            if (context.Request.QueryString["idMayCheckOut"] != null)
+                idMayCheckOut = context.Request.QueryString["idMayCheckOut"].ToString();
+
             string userId = "";
             if (context.Session["userId"] != null)
                 userId = context.Session["userId"].ToString();
@@ -75,7 +96,7 @@ namespace HLVTimeSheet.Admin.Hander
             {
                 TimeKeepingController timeObj = new TimeKeepingController();
 
-                string msg = timeObj.INSERT_TimeKeeping(ngaynhap, phongban, nhansu, gioIn, phutIn, gioOut, phutOut, "0", "1", userId);
+                string msg = timeObj.INSERT_TimeKeeping_New(ngaynhap, phongban, nhansu, gioIn, phutIn, gioOut, phutOut, "0", hinhanhIn, hinhanhOut, idMayCheckIn, idMayCheckOut, trangthai, userId);
 
                 context.Response.Write(msg);
             }
