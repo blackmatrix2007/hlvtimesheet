@@ -437,6 +437,10 @@ namespace HLVTimeSheet.Model.DeviceManager
 
                         ngaySync        DATETIME      DEFAULT GETDATE(),
 
+                        -- Traceability: đã đồng bộ vào ChamCong chưa
+                        daDongBo        BIT           NOT NULL DEFAULT 0,
+                        ngayDongBo      DATETIME      NULL,
+                        chamcong_fk     INT           NULL
                     );
                     CREATE INDEX IX_ChamCong_Device_mapNV_thoiGian
                         ON ChamCong_Device (mapNV, thoiGian);
@@ -476,6 +480,29 @@ namespace HLVTimeSheet.Model.DeviceManager
                     BEGIN
                         CREATE UNIQUE INDEX UQ_ChamCong_Device_DmLogId
                             ON ChamCong_Device (dmLogId) WHERE dmLogId IS NOT NULL;
+                    END
+
+                    -- Migration: thêm cột traceability đồng bộ vào ChamCong
+                    IF NOT EXISTS (
+                        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE TABLE_NAME = 'ChamCong_Device' AND COLUMN_NAME = 'daDongBo'
+                    )
+                    BEGIN
+                        ALTER TABLE ChamCong_Device ADD daDongBo BIT NOT NULL DEFAULT 0;
+                    END
+                    IF NOT EXISTS (
+                        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE TABLE_NAME = 'ChamCong_Device' AND COLUMN_NAME = 'ngayDongBo'
+                    )
+                    BEGIN
+                        ALTER TABLE ChamCong_Device ADD ngayDongBo DATETIME NULL;
+                    END
+                    IF NOT EXISTS (
+                        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE TABLE_NAME = 'ChamCong_Device' AND COLUMN_NAME = 'chamcong_fk'
+                    )
+                    BEGIN
+                        ALTER TABLE ChamCong_Device ADD chamcong_fk INT NULL;
                     END
                 END";
 

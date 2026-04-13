@@ -109,6 +109,8 @@ namespace HLVTimeSheet.Model.DeviceManager
                     {
                         result.Succeeded++;
                         Debug.WriteLine($"[Import] OK: {mapNV}");
+                        // Đánh dấu đã đồng bộ vào ChamCong
+                        MarkAsSynced(mapNV, ngay);
                     }
                     else
                     {
@@ -204,6 +206,39 @@ namespace HLVTimeSheet.Model.DeviceManager
                     adapter.Fill(dt);
                     return dt;
                 }
+            }
+        }
+
+        // ─── Private: Đánh dấu đã đồng bộ ──────────────────────────────────────
+
+        private static void MarkAsSynced(string mapNV, DateTime ngay)
+        {
+            try
+            {
+                var conn = new ConnectionDatabase();
+                using (var sqlConn = new SqlConnection(conn.ReturnConnectionDatabaseWS()))
+                {
+                    sqlConn.Open();
+                    const string sql = @"
+                        UPDATE ChamCong_Device
+                        SET    daDongBo   = 1,
+                               ngayDongBo = GETDATE()
+                        WHERE  mapNV = @mapNV
+                          AND  CAST(thoiGian AS DATE) = @ngay
+                          AND  daDongBo = 0";
+                    using (var cmd = new SqlCommand(sql, sqlConn))
+                    {
+                        cmd.Parameters.AddWithValue("@mapNV", mapNV);
+                        cmd.Parameters.AddWithValue("@ngay",  ngay.Date);
+                        int rows = cmd.ExecuteNonQuery();
+                        Debug.WriteLine($"[Import] MarkAsSynced: {mapNV} {ngay:dd/MM/yyyy} → {rows} rows updated");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Không ném ngoại lệ — import đã thành công, chỉ cần log
+                Debug.WriteLine($"[Import] MarkAsSynced FAIL {mapNV}: {ex.Message}");
             }
         }
 
