@@ -108,7 +108,7 @@ namespace HLVTimeSheet.Admin.Hander
                 var result = svc.ProcessWebhook(dto);
 
                 int statusCode = result.Success ? 200 : 422;
-                Debug.WriteLine($"[Webhook] Result: success={result.Success}, recordId={result.RecordId}, isValid={result.IsValid}, msg={result.Message}");
+                Debug.WriteLine($"[Webhook] 14_03_09:37 Result: success={result.Success}, recordId={result.RecordId}, isValid={result.IsValid}, msg={result.Message}");
                 DeviceManagerLogger.Log("WEBHOOK", $"Result: success={result.Success}, recordId={result.RecordId}, isValid={result.IsValid}, msg={result.Message}");
 
                 // Auto-import vào ChamCong khi webhook hợp lệ
