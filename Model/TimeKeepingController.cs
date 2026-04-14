@@ -118,6 +118,7 @@ namespace HLVTimeSheet.Model
                     sql = "INSERT ChamCong_ChiTiet(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, nguoitao, nguoisua) " +
                     " SELECT '" + chamcong_fk + "', N'" + ngaynhap + "', N'" + phongban_fk + "', N'" + nhansu_fk + "', N'" + thoigian + "', N'" + gioIn + "', '" + phutIn + "', '" + thang + "', N'" + nam + "', '" + loai + "', gioStart, phutStart, gioEnd, phutEnd, N'" + hinhanhIn + "', N'" + idMayCheckIn + "', '" + trangthai + "', '" + nguoitao + "', '" + nguoitao + "' " +
                     " FROM GioLamViec WHERE loai = 1 AND trangthai = 1 AND phongban_fk = '" + phongban_fk + "' ";
+                    DeviceManagerLogger.Log("IMPORT", $"SQL ChiTiet loai=1: chamcong_fk={chamcong_fk}, phongban={phongban_fk}, nhansu={nhansu_fk}, ngay={ngaynhap}, gio={gioIn}:{phutIn}, idMayIn={idMayCheckIn}");
                     command.CommandTimeout = int.MaxValue;
                     command.CommandText = sql;
                     kq = command.ExecuteNonQuery();

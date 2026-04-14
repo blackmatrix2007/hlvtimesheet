@@ -111,6 +111,7 @@ namespace HLVTimeSheet.Model.DeviceManager
                 }
 
                 Debug.WriteLine($"[Import] Calling INSERT_TimeKeeping_New: nhansu={nhansuFk}, phongban={phongbanFk}, ngay={ngayStr}, in={gioIn}:{phutIn}, out={gioOut}:{phutOut}");
+                DeviceManagerLogger.Log("IMPORT", $"Calling INSERT_TimeKeeping_New: mapNV={mapNV}, nhansu={nhansuFk}, phongban={phongbanFk}, ngay={ngayStr}, in={gioIn}:{phutIn}, out={gioOut}:{phutOut}, loai={loaiCheck}, idIn={mayCheckIn}, idOut={mayCheckOut}");
 
                 try
                 {
@@ -147,6 +148,7 @@ namespace HLVTimeSheet.Model.DeviceManager
                 {
                     result.Errors.Add($"[{mapNV}] Exception: {ex.Message}");
                     Debug.WriteLine($"[Import] EXCEPTION {mapNV}: {ex.Message}");
+                    DeviceManagerLogger.LogError("IMPORT", $"EXCEPTION {mapNV} (nhansu={nhansuFk}, phongban={phongbanFk}, ngay={ngayStr}, idIn={mayCheckIn}): {ex.Message}", ex);
                 }
             }
 
