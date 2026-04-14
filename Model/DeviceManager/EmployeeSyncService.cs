@@ -58,7 +58,8 @@ namespace HLVTimeSheet.Model.DeviceManager
             string department = null,
             string position   = null,
             string email      = null,
-            string phone      = null)
+            string phone      = null,
+            string mimeType   = "image/jpeg")
         {
             if (faceImageBytes == null || faceImageBytes.Length == 0)
                 throw new ArgumentException("Dữ liệu ảnh khuôn mặt không được rỗng.");
@@ -79,7 +80,7 @@ namespace HLVTimeSheet.Model.DeviceManager
                 if (!string.IsNullOrEmpty(phone))      form.Add(new StringContent(phone),      "phone");
 
                 var imageContent = new ByteArrayContent(faceImageBytes);
-                imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpeg");
+                imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? "image/jpeg");
                 form.Add(imageContent, "faceImage", fileName);
 
                 return await _client.PostMultipartAsync<RegisterFaceResponse>(endpoint, form);

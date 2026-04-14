@@ -215,25 +215,41 @@ namespace HLVTimeSheet.Admin
                 }
 
                 // Tải ảnh từ hlv-ws
-                string avatarUrl = $"http://hlv-ws.giangdc.company/Admin/Avatar/{Uri.EscapeUriString(hinhanh)}";
+                string avatarUrl = $"http://hlv-ws.giangdc.company/Admin/Avatar/{Uri.EscapeDataString(hinhanh)}";
                 byte[] imageBytes;
                 string fileName;
+                string mimeType;
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.Timeout = TimeSpan.FromSeconds(15);
                     var response = Task.Run(async () => await httpClient.GetAsync(avatarUrl)).GetAwaiter().GetResult();
+                    string respContentType = response.Content.Headers.ContentType?.MediaType ?? "";
                     if (!response.IsSuccessStatusCode)
                     {
+                        DeviceManagerLogger.Log("FACE-REG", $"SyncAvatar [{code}]: HTTP {(int)response.StatusCode} từ {avatarUrl}");
                         lblSyncResult.Text = Alert("danger", $"Không tải được ảnh avatar ({response.StatusCode}): {HttpUtility.HtmlEncode(avatarUrl)}");
                         return;
                     }
                     imageBytes = Task.Run(async () => await response.Content.ReadAsByteArrayAsync()).GetAwaiter().GetResult();
                     fileName   = System.IO.Path.GetFileName(hinhanh);
+
+                    // Phát hiện MIME type từ magic bytes (ưu tiên hơn Content-Type header)
+                    mimeType = DetectMimeType(imageBytes, fileName);
+
+                    string magic4 = imageBytes.Length >= 4 ? BitConverter.ToString(imageBytes, 0, 4) : "?";
+                    DeviceManagerLogger.Log("FACE-REG", $"SyncAvatar [{code}]: url={avatarUrl}, httpContentType={respContentType}, detectedMime={mimeType}, size={imageBytes.Length} bytes, magic={magic4}");
+
+                    // Kiểm tra có phải ảnh không (magic bytes)
+                    if (!mimeType.StartsWith("image/"))
+                    {
+                        lblSyncResult.Text = Alert("danger", $"File tải về không phải ảnh (magic={magic4}, contentType={respContentType}). Có thể server trả về HTML. URL: {HttpUtility.HtmlEncode(avatarUrl)}");
+                        return;
+                    }
                 }
 
                 // Đăng ký lên DeviceManager
                 var result = Task.Run(async () =>
-                    await svc.RegisterEmployeeFaceAsync(code, fullName, imageBytes, fileName, department, position)
+                    await svc.RegisterEmployeeFaceAsync(code, fullName, imageBytes, fileName, department, position, mimeType: mimeType)
                 ).GetAwaiter().GetResult();
 
                 var logMsg = $"SyncAvatar [{code}]: IsSuccess={result?.IsSuccess}, Message={result?.Message}";
@@ -362,6 +378,33 @@ namespace HLVTimeSheet.Admin
 
         private static string Alert(string type, string msg)
             => $"<div class='alert alert-{type} mt-2'>{msg}</div>";
+
+        /// <summary>Phát hiện MIME type từ magic bytes, fallback về extension.</summary>
+        private static string DetectMimeType(byte[] bytes, string fileName)
+        {
+            if (bytes != null && bytes.Length >= 4)
+            {
+                // JPEG: FF D8 FF
+                if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
+                    return "image/jpeg";
+                // PNG: 89 50 4E 47
+                if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
+                    return "image/png";
+                // GIF: 47 49 46 38
+                if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46)
+                    return "image/gif";
+                // WebP: 52 49 46 46 ... 57 45 42 50
+                if (bytes.Length >= 12 && bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46)
+                    return "image/webp";
+            }
+            // Fallback theo extension
+            string ext = System.IO.Path.GetExtension(fileName ?? "").ToLowerInvariant();
+            if (ext == ".jpg" || ext == ".jpeg") return "image/jpeg";
+            if (ext == ".png") return "image/png";
+            if (ext == ".gif") return "image/gif";
+            if (ext == ".webp") return "image/webp";
+            return "application/octet-stream"; // không phải ảnh
+        }
 
 
     }
