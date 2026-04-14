@@ -126,8 +126,8 @@ namespace HLVTimeSheet.Model.DeviceManager
                         trangthai: "1",
                         hinhanhIn: "",
                         hinhanhOut: "",
-                        idMayCheckIn: mayCheckIn,
-                        idMayCheckOut: mayCheckOut,
+                        idMayCheckIn: "",   // idMayChamCong là numeric — không truyền device ID string
+                        idMayCheckOut: "",
                         nguoitao: nguoiTao);
 
                     if (string.IsNullOrEmpty(kq))
