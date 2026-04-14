@@ -128,11 +128,12 @@ namespace HLVTimeSheet.Model.DeviceManager
                         ISNULL(pb.ten, '')                                                      AS phongBan,
                         ISNULL((SELECT cv.ten FROM ChucVu cv WHERE cv.pk_seq = ns.chucvu_fk),'') AS chucVu,
                         ISNULL(ns.mail, '')                                                     AS email,
-                        ISNULL(ns.dienthoai, '')                                                AS dienThoai
+                        ISNULL(ns.dienthoai, '')                                                AS dienThoai,
+                        ISNULL(ns.hinhanh, '')                                                  AS hinhanh
                     FROM DanhSachNhanSu ns
                     LEFT JOIN PhongBan pb ON pb.pk_seq = ns.phongban_fk
                     WHERE ns.trangthai = 1
-                    ORDER BY ns.capbac, ns.ma ";
+                    ORDER BY ns.capbac, ns.ma";
 
                 using (var cmd = new SqlCommand(sql, sqlConn))
                 using (var adapter = new SqlDataAdapter(cmd))

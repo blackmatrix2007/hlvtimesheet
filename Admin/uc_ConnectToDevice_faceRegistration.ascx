@@ -35,17 +35,20 @@
         </div>
         <div class="col-xs-12 col-sm-12 col-lg-12">
             <div class="row" style="margin-top:10px;">
-                <!-- Hidden field để truyền mã NV cần xóa -->
+                <!-- Hidden fields để truyền mã NV -->
                     <asp:HiddenField ID="hdnRemoveCode" runat="server" />
                     <asp:Button ID="btnRemoveFace" runat="server" Text="" Style="display:none" OnClick="BtnRemoveFace_Click" />
+                    <asp:HiddenField ID="hdnSyncCode" runat="server" />
+                    <asp:Button ID="btnSyncAvatar" runat="server" Text="" Style="display:none" OnClick="BtnSyncAvatar_Click" />
             </div>
         </div>
     </div>
 
     <!-- Danh sách đã đăng ký -->
-    <div class="box-body table-responsive no-padding">        
+    <div class="box-body table-responsive no-padding">
           <asp:Label ID="lblRemoveResult" runat="server" />
-           <asp:Literal ID="litList" runat="server" />          
+          <asp:Label ID="lblSyncResult" runat="server" />
+           <asp:Literal ID="litList" runat="server" />
     </div>
 
 </div>
@@ -56,6 +59,12 @@
         if (!confirm('Xóa khuôn mặt của ' + code + ' khỏi DeviceManager?')) return;
         document.getElementById('<%= hdnRemoveCode.ClientID %>').value = code;
         document.getElementById('<%= btnRemoveFace.ClientID %>').click();
+    }
+
+    function syncAvatar(code) {
+        if (!confirm('Đồng bộ avatar hiện tại của ' + code + ' lên DeviceManager làm khuôn mặt nhận diện?')) return;
+        document.getElementById('<%= hdnSyncCode.ClientID %>').value = code;
+        document.getElementById('<%= btnSyncAvatar.ClientID %>').click();
     }
 
     // Preview ảnh trước khi upload

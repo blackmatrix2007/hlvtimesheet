@@ -68,23 +68,15 @@ namespace HLVTimeSheet.Admin
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hdnRemoveCode;
 
-        /// <summary>
-        /// btnRemoveFace control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnRemoveFace;
 
-        /// <summary>
-        /// lblRemoveResult control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdnSyncCode;
+
+        protected global::System.Web.UI.WebControls.Button btnSyncAvatar;
+
         protected global::System.Web.UI.WebControls.Label lblRemoveResult;
+
+        protected global::System.Web.UI.WebControls.Label lblSyncResult;
 
         /// <summary>
         /// litList control.
