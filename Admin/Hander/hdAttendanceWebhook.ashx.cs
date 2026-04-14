@@ -119,7 +119,7 @@ namespace HLVTimeSheet.Admin.Hander
                     try
                     {
                         var importSvc = new DeviceAttendanceImportService();
-                        var importResult = importSvc.ImportRange(thoiGianLocal.Date, thoiGianLocal.Date, nguoiTao: "webhook-auto");
+                        var importResult = importSvc.ImportRange(thoiGianLocal.Date, thoiGianLocal.Date, nguoiTao: "0");
                         Debug.WriteLine($"[Webhook] AutoImport: processed={importResult.Processed}, succeeded={importResult.Succeeded}, skipped={importResult.Skipped}");
                         DeviceManagerLogger.Log("WEBHOOK", $"AutoImport {thoiGianLocal:dd/MM/yyyy}: processed={importResult.Processed}, succeeded={importResult.Succeeded}, skipped={importResult.Skipped}, errors={importResult.Errors.Count}");
                         foreach (var err in importResult.Errors)
