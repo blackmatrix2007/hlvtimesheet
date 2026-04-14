@@ -1,4 +1,5 @@
 ﻿using HLVTimeSheet.AcsessData;
+using HLVTimeSheet.Model.DeviceManager;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -74,7 +75,8 @@ namespace HLVTimeSheet.Model
                         transaction.Rollback();
                         connection.Close();
                         Debug.WriteLine($"[TimeKeeping] FAILED INSERT ChamCong: nhansu={nhansu_fk}, phongban={phongban_fk}");
-                        return "2.Error! Cannot created new this.";
+                        DeviceManagerLogger.Log("IMPORT", $"FAIL INSERT ChamCong: nhansu={nhansu_fk}, phongban={phongban_fk}, ngay={ngaynhap}");
+                        return "2.Error! FAIL INSERT ChamCong nhansu=" + nhansu_fk;
                     }
 
                     if (chamcong_fk.Length < 3)
@@ -124,7 +126,8 @@ namespace HLVTimeSheet.Model
                     {
                         transaction.Rollback();
                         connection.Close();
-                        return "2.Error! Cannot created new this.";
+                        DeviceManagerLogger.Log("IMPORT", $"FAIL INSERT ChiTiet loai=1: GioLamViec không có phongban_fk={phongban_fk}, nhansu={nhansu_fk}, ngay={ngaynhap}");
+                        return "2.Error! FAIL ChiTiet loai=1 (GioLamViec phongban=" + phongban_fk + ")";
                     }
                 }
 
@@ -163,7 +166,8 @@ namespace HLVTimeSheet.Model
                     {
                         transaction.Rollback();
                         connection.Close();
-                        return "2.Error! Cannot created new this.";
+                        DeviceManagerLogger.Log("IMPORT", $"FAIL INSERT ChiTiet loai=2: GioLamViec không có phongban_fk={phongban_fk}, nhansu={nhansu_fk}, ngay={ngaynhap}");
+                        return "2.Error! FAIL ChiTiet loai=2 (GioLamViec phongban=" + phongban_fk + ")";
                     }
                 }
 
