@@ -266,6 +266,18 @@ namespace HLVTimeSheet.AcsessData
             return listStr;
         }
 
+        public static string returnHour(string str)
+        {
+            str = str.Substring(0, 2);
+            return str;
+        }
+
+        public static string returnMinite(string str)
+        {
+            str = str.Substring(3, 2);
+            return str;
+        }
+
         public static string returnStringDay(string day, string month, string year)
         {
             if (day.ToString().Length < 2)

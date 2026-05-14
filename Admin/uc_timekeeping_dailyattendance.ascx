@@ -16,17 +16,18 @@
                  <%if (language.Equals("1")){ %> Back <%} else if (language.Equals("2")){ %>Quay lại<%} %>
             </a>
 
-             <a class="btn btn-info" href="javascript:ExportExcel();" style="display:none;"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span> 
-                  <%if (language.Equals("1")){ %> Report Production plan <%} else if (language.Equals("2")){ %> Báo cáo kế hoạch sản xuất <%} %>
+             <a class="btn btn-info" href="javascript:loadPageReport();"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span> 
+                  <%if (language.Equals("1")){ %> Report <%} else if (language.Equals("2")){ %> Báo cáo <%} %>
              </a>
 
         </div>
-         <div class="col-xs-4"> 
-             <div style="text-align:center; float:left; width:20%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: lightgreen;"> Fulltime</div>
-             <div style="text-align:center; float:left; width:20%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: yellow;"> Hafltime</div>
-             <div style="text-align:center; float:left; width:20%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: orange;"> Approved leave</div>
-             <div style="text-align:center; float:left; width:20%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: orangered;"> AB</div>
-             <div style="text-align:center; float:left; width:20%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: lightgray;"> Late arrival</div>
+         <div class="col-xs-5"> 
+             <div style="text-align:center; float:left; width:15%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: lightgreen;"> Fulltime</div>
+             <div style="text-align:center; float:left; width:15%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: yellow;"> Hafltime</div>
+             <div style="text-align:center; float:left; width:15%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: lightpink;"> Not completed</div>
+             <div style="text-align:center; float:left; width:15%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: orange;"> Approved leave</div>
+             <div style="text-align:center; float:left; width:15%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: orangered;"> AB</div>
+             <div style="text-align:center; float:left; width:15%; height:30px; border:0.1px solid black; font-size:smaller; padding-top:5px; background-color: lightgray;"> Late arrival</div>
          </div>
           <div class="col-xs-1" style="display:none;">
               <input type="text" class="form-control datepicker" id="txtTuNgay"  runat="server" data-toggle="tooltip" title="From date" autocomplete="off">
@@ -54,7 +55,7 @@
              <asp:DropDownList ID="ddlNam" runat="server" 
                  AutoPostBack="True" onselectedindexchanged="ddlNam_SelectedIndexChanged" CssClass='form-control' ></asp:DropDownList>
          </div>
-        <div class="col-xs-1">
+        <div class="col-xs-1" style="display:none;">
              <input type="text" class="form-control datepicker" id="txtNgayNhap" runat="server" placeholder="dd-MM-yyyy">
         </div>
     </div>
@@ -87,7 +88,7 @@
         </div>
 
         <div class="row" style="margin-top:10px;  margin-left:0.5%; font-size:small;">               
-            <div style="height:auto; overflow:auto; margin-bottom:-20px; background-color:white;" id="divDetail">
+            <div style="height:auto; overflow:auto; margin-bottom:-20px; background-color:white;" id="divDataMember">
             <table style="width:99%; max-height:auto; font-size:smaller; overflow:scroll;">
                 <asp:Literal ID="ltInfor" runat="server"></asp:Literal>
             </table>
@@ -161,18 +162,18 @@
                         </div>
                         
                        <div class="row">
-                             <div class="col-xs-12 col-sm-3 col-lg-2" style="margin-top:10px;"><%if (language.Equals("1")){ %> Date <%} else if (language.Equals("2")) { %> Ngày nhập <%} %></div>
+                             <div class="col-xs-12 col-sm-3 col-lg-2" style="margin-top:10px;"><%if (language.Equals("1")){ %> Date <%} else if (language.Equals("2")) { %> Ngày <%} %></div>
                              <div class="col-xs-12 col-sm-9 col-lg-10" style="margin-top:10px;"> 
                                  <asp:TextBox ID="txtNgayNhapShow" runat="server" Width="100%" CssClass='form-control' ReadOnly="true"></asp:TextBox>
                              </div>
                          </div>
 
-                        <div class="row">
-                        <div class="col-xs-12 col-sm-3 col-lg-2" style="margin-top:10px;"><%if (language.Equals("1")){ %> Status <%} else if (language.Equals("2")) { %> Trạng thái <%} %></div>
-                        <div class="col-xs-12 col-sm-9 col-lg-10" style="margin-top:10px;">  
-                            <asp:DropDownList ID="ddlTrangThai" runat="server" Width="100%" CssClass='form-control'></asp:DropDownList>
-                        </div>    
-
+                        <div class="row" style="display:none;">
+                            <div class="col-xs-12 col-sm-3 col-lg-2" style="margin-top:10px;"><%if (language.Equals("1")){ %> Status <%} else if (language.Equals("2")) { %> Trạng thái <%} %></div>
+                            <div class="col-xs-12 col-sm-9 col-lg-10" style="margin-top:10px;">  
+                                <asp:DropDownList ID="ddlTrangThai" runat="server" Width="100%" CssClass='form-control'></asp:DropDownList>
+                            </div>    
+                        </div>
                        <div class="row">
                            <div class="col-xs-12 col-sm-3 col-lg-2" style="margin-top:10px;"><%if (language.Equals("1")){ %> Check in <%} else if (language.Equals("2")) { %> Check in <%} %></div>
                            <div class="col-xs-12 col-sm-9 col-lg-10" style="margin-top:10px;">  
@@ -184,9 +185,9 @@
                            </div>
                        </div>
                        
-                  </div>
+                 
                 </div>
-                <div class="col-xs-12 col-sm-12 col-lg-12"> 
+                   <div class="col-xs-12 col-sm-12 col-lg-12"> 
                     <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"> 
                         <div style="text-align:center; height:250px; width:70%; margin-left:15%;" id="divImageCheckIn" runat="server"></div>
                         <div class="overlay-text" style="text-align:center;">Check in </div>
@@ -197,8 +198,7 @@
                         <div class="overlay-text" style="text-align:center;">Check out</div>
                     </div>
                 </div>
-
-                 <div class="col-xs-12 col-sm-12 col-lg-12" style="display:none;"> 
+                   <div class="col-xs-12 col-sm-12 col-lg-12" style="display:none;"> 
                      <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"> 
                         <asp:TextBox ID="txtHinhAnhIn" runat="server" Width="100%" CssClass='form-control' ReadOnly="true"></asp:TextBox>
                      </div>
@@ -207,8 +207,7 @@
                         <asp:TextBox ID="txtHinhAnhOut" runat="server" Width="100%" CssClass='form-control' ReadOnly="true"></asp:TextBox>
                      </div>
                  </div>
-
-                <div class="col-xs-12 col-sm-12 col-lg-12" style="display:none;"> 
+                   <div class="col-xs-12 col-sm-12 col-lg-12" style="display:none;">
                     <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"> 
                        <asp:TextBox ID="txtIDMayCheckIn" runat="server" Width="100%" CssClass='form-control' ReadOnly="true"></asp:TextBox>
                     </div>
@@ -218,9 +217,12 @@
                     </div>
                 </div>
 
+                <div class="col-xs-12 col-sm-12 col-lg-12" style="margin-top:10px;">
+                     <div style="height:auto; width:99%; overflow:auto; margin-left:0.5%; background-color:white;" id="divDetail"></div>     
+                </div>
 		    </div>
 
-            <div id='control02' class="modal-footer" style="margin-top:10px;">
+            <div id='control02' class="modal-footer" style="margin-top:20px;">
 		        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 		        <button type="button" class="btn btn-primary" onclick='javascript:SaveInforStaff();' id='btnLuuthongtin' >Save</button>
             </div>
@@ -243,6 +245,71 @@
     </div>
 </div><!-- /.box -->
 
+      <div class="modal fade showInforStaffYear" id="exampleModalStaffYear" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">            
+	        <div class="modal-dialog" role="document" style="width:90%">
+	        <div class="modal-content">
+		        <div class="modal-header modal-primary">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		        <h4 class="modal-title" id="exampleModalLabelStaffYear">Information detail</h4>
+		        </div>
+
+		        <div class="row modal-body">
+                    <div class="col-xs-12 col-sm-12 col-lg-12">
+                       <div class="col-xs-12 col-sm-3 col-lg-3">
+                        <div class="row" style="text-align:center;">
+                            <div class="col-xs-12 col-sm-12 col-lg-12">
+                                <div style="text-align:center; height:90%; width:90%; " id="divHinhUpLoadYear" runat="server"></div>
+                            </div>
+                        </div>
+                      </div>
+                       <div class="col-xs-12 col-sm-3 col-lg-3">
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-6 col-lg-6"  style="margin-top:10px;"><%if (language.Equals("1")){ %>Remaining AL <%} else if (language.Equals("2")) { %> Số ngày nghỉ còn lại <%} %></div>
+                                 <div class="col-xs-12 col-sm-6 col-lg-6"  style="margin-top:10px; text-align:right;"> 
+                                     <asp:TextBox ID="txtRemainingAL" runat="server" Width="100%" CssClass='form-control clearBoder' ReadOnly="true"></asp:TextBox>
+                                  </div>
+                            </div>
+                           <div class="row">
+                                <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"><%if (language.Equals("1")){ %> AL <%} else if (language.Equals("2")) { %> Số ngày đã nghỉ <%} %></div>
+                                <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px; text-align:right;"> 
+                                    <asp:TextBox ID="txtALYear" runat="server" Width="100%" CssClass='form-control clearBoder' ReadOnly="true"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                              <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"><%if (language.Equals("1")){ %> AB <%} else if (language.Equals("2")) { %> AL <%} %></div>
+                              <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px; text-align:right;"> 
+                                  <asp:TextBox ID="txtABYear" runat="server" Width="100%" CssClass='form-control clearBoder' ReadOnly="true"></asp:TextBox>
+                              </div>
+                          </div>
+                           <div class="row">
+                              <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"><%if (language.Equals("1")){ %> Late <%} else if (language.Equals("2")) { %> Đi muộn <%} %></div>
+                              <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px; text-align:right;"> 
+                                  <asp:TextBox ID="txtLateYear" runat="server" Width="100%" CssClass='form-control clearBoder' ReadOnly="true"></asp:TextBox>
+                              </div>
+                          </div>
+                           <div class="row">
+                              <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px;"><%if (language.Equals("1")){ %> OT <%} else if (language.Equals("2")) { %> Tăng ca <%} %></div>
+                              <div class="col-xs-12 col-sm-6 col-lg-6" style="margin-top:10px; text-align:right;"> 
+                                  <asp:TextBox ID="txtOverTimeYear" runat="server" Width="100%" CssClass='form-control clearBoder' ReadOnly="true"></asp:TextBox>
+                              </div>
+                          </div>
+                        
+                    </div>
+                       <div class="col-xs-12 col-sm-6 col-lg-6"> </div>
+                     </div>
+                    
+                    <div class="col-xs-12 col-sm-12 col-lg-12" style="margin-top:10px;">
+                         <div style="height:auto; width:99%; overflow:auto; margin-left:0.5%; background-color:white;" id="divYearDetail"></div>     
+                    </div>		        
+	        </div>
+                 <div id='control03' class="modal-footer" style="margin-top:5px;">
+                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>                 
+             </div>
+	        </div>
+        </div>
+    </div><!-- /.box -->
+</div>
 <script type="text/javascript" >
 
     $('#exampleModal').on('show.bs.modal', function (event) {
@@ -253,11 +320,30 @@
         var nhansu = recipient.split('--')[1];
 
         GetInfoStaff(nhansu, ngaynhap);
+        GetInfoStaffDetail(nhansu, ngaynhap);
         
     })
 
+    $('#exampleModalStaffYear').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal        
+        var recipient = button.data('whatever') // Extract info FROM data-* attributes
+
+        var nhansu = recipient;
+
+        GetInfoStaffYearTotal(nhansu);
+        GetInfoStaffYearDetail(nhansu);
+    })
     
-    
+    function loadPageReport() {
+        var nam = document.getElementById("<%= ddlNam.ClientID %>").value;
+        var thang = document.getElementById("<%= ddlThang.ClientID %>").value;
+        var tungay = document.getElementById("<%= txtTuNgay.ClientID %>").value;
+        var denngay = document.getElementById("<%= txtDenNgay.ClientID %>").value;
+        var phongban = document.getElementById("<%= ddlPhongBan.ClientID %>").value;
+
+        window.open("Report.aspx?func=101&ye=" + nam + "&mo=" + thang + "&todate=" + tungay + "&frdate=" + denngay + "&de=" + phongban);
+    }
+
     function GetInfoStaff(nhansu, ngaynhap) {
         if (typeof nhansu !== 'undefined') {
 
@@ -314,6 +400,51 @@
 
                     document.getElementById("<%= divImageCheckIn.ClientID %>").innerHTML = "<img src='https://hlv-ws-ssl.giangdc.company/Admin/Avatar/" + hinhanhIn + "' style='max-height:100%; max-width:100%' />";
                     document.getElementById("<%= divImageCheckOut.ClientID %>").innerHTML = "<img src='https://hlv-ws-ssl.giangdc.company/Admin/Avatar/" + hinhanhOut + "' style='max-height:100%; max-width:100%' />";
+                }
+            });
+        }
+    }
+
+    function GetInfoStaffDetail(nhansu, ngaynhap) {
+        if (typeof nhansu !== 'undefined') {
+
+            var action = "viewStaffDetail";
+            $.post("Hander/hdTimeKeeping.ashx?action=" + action + "&nhansu=" + nhansu + "&ngaynhap=" + ngaynhap, function (result) {
+                if (result.length > 10) {
+                    document.getElementById("divDetail").innerHTML = result;
+                }
+            });
+        }
+    }
+
+    function GetInfoStaffYearTotal(nhansu) {
+        if (typeof nhansu !== 'undefined') {
+
+            var action = "viewStaffYearTotal";
+            $.post("Hander/hdTimeKeeping.ashx?action=" + action + "&nhansu=" + nhansu, function (result) {
+
+                if (result.length > 10) {
+
+                    var arr = result.split(" -- ");
+
+                    document.getElementById("<%= txtRemainingAL.ClientID %>").value = arr[0];
+                    document.getElementById("<%= txtALYear.ClientID %>").value = arr[1];
+                    document.getElementById("<%= txtABYear.ClientID %>").value = arr[2];
+                    document.getElementById("<%= txtLateYear.ClientID %>").value = arr[3];
+                    document.getElementById("<%= txtOverTimeYear.ClientID %>").value = arr[4];                    
+                    document.getElementById("<%= divHinhUpLoadYear.ClientID %>").innerHTML = "<img src='https://hlv-ws-ssl.giangdc.company/Admin/Avatar/" + arr[5] + "' style='max-height:200px; max-width:200px;' />";
+                }
+            });
+        }
+    }
+
+    function GetInfoStaffYearDetail(nhansu) {
+        if (typeof nhansu !== 'undefined') {
+
+            var action = "viewStaffYearDetail";
+            $.post("Hander/hdTimeKeeping.ashx?action=" + action + "&nhansu=" + nhansu, function (result) {
+                if (result.length > 10) {
+                    document.getElementById("divYearDetail").innerHTML = result;
                 }
             });
         }

@@ -11,7 +11,7 @@ using System.Web;
 namespace HLVTimeSheet.Model
 {
     public class TimeKeepingController
-    {       
+    {
         public string INSERT_TimeKeeping_New(string ngaynhap, string phongban_fk, string nhansu_fk, string gioIn, string phutIn, string gioOut, string phutOut, string loai, string hinhanhIn, string hinhanhOut, string idMayCheckIn, string idMayCheckOut, string trangthai, string nguoitao)
         {
             Debug.WriteLine($"[TimeKeeping] INSERT_NEW: nhansu_fk={nhansu_fk}, phongban_fk={phongban_fk}, ngay={ngaynhap}, in={gioIn}:{phutIn}, out={gioOut}:{phutOut}");
@@ -22,6 +22,13 @@ namespace HLVTimeSheet.Model
             string thoigian = "";
             int kq = 0;
             bool flag = false;
+            bool isDuplicate = false;
+
+            //trangthai = "1";
+            string gioStart = "0";
+            string phutStart = "0";
+            string gioEnd = "0";
+            string phutEnd = "0";
 
             // Parse thang/nam từ ngaynhap (dd-MM-yyyy) để INSERT ChamCong
             if (DateTime.TryParseExact(ngaynhap, "dd-MM-yyyy",
@@ -29,13 +36,14 @@ namespace HLVTimeSheet.Model
                 System.Globalization.DateTimeStyles.None, out DateTime ngayParsed))
             {
                 thang = ngayParsed.Month.ToString();
-                nam   = ngayParsed.Year.ToString();
+                nam = ngayParsed.Year.ToString();
             }
             Debug.WriteLine($"[TimeKeeping] thang={thang}, nam={nam}");
 
-            string sql = "SELECT pk_seq FROM ChamCong WHERE nhansu_fk = N'" + nhansu_fk + "' AND ngaynhap = '" + ngaynhap + "' ";
+            string sql = "SELECT gioStart, phutStart, gioEnd, phutEnd " +
+                        " FROM GioLamViec WHERE loai = 1 AND trangthai = 1 AND phongban_fk = '" + phongban_fk + "' ";            
             ConnectionDatabase conn = new ConnectionDatabase();
-            SqlTransaction transaction;            
+            SqlTransaction transaction;
             using (var connection = new SqlConnection(conn.ReturnConnectionDatabase("", "", "", "")))
             using (var command = new SqlCommand(sql, connection))
             {
@@ -43,14 +51,56 @@ namespace HLVTimeSheet.Model
                 transaction = connection.BeginTransaction();
                 command.Transaction = transaction; // bắt buộc khi connection có active transaction
                 // thực hiện truy vấn
+                SqlDataReader objNS = command.ExecuteReader();
+                if (objNS != null)
+                {
+                    DataTable dt = new DataTable();
+                    dt.Load(objNS);
+                    {
+                        gioStart = dt.Rows[0]["gioStart"].ToString();
+                        phutStart = dt.Rows[0]["phutStart"].ToString();
+                        gioEnd = dt.Rows[0]["gioEnd"].ToString();
+                        phutEnd = dt.Rows[0]["phutEnd"].ToString();
+                    }
+                }
+
+                if (gioIn.Length <= 0)
+                    gioIn = "0";
+                if (phutIn.Length <= 0)
+                    phutIn = "0";
+
+                if (gioOut.Length <= 0)
+                    gioOut = "0";
+                if (phutOut.Length <= 0)
+                    phutOut = "0";
+
+                double valueIn = double.Parse(gioStart) * 60 + double.Parse(phutStart);
+                double valueOut = double.Parse(gioEnd) * 60 + double.Parse(phutEnd);
+
+                double actualIn = double.Parse(gioIn) * 60 + double.Parse(phutIn);
+                double actualOut = double.Parse(gioOut) * 60 + double.Parse(phutOut);
+
+                if (actualIn > 0 || actualOut > 0)
+                    trangthai = "1";
+
+                if (actualIn - 10 > valueIn)
+                    trangthai = "5"; // Late
+                if (actualOut < valueOut - 10 && actualIn == 0)
+                    trangthai = "2"; // Haff
+                
+
+                sql = "SELECT pk_seq FROM ChamCong WHERE nhansu_fk = N'" + nhansu_fk + "' AND ngaynhap = '" + ngaynhap + "' ";
+                command.CommandTimeout = int.MaxValue;
+                command.CommandText = sql;
                 object obj = command.ExecuteScalar();
                 Debug.WriteLine($"[TimeKeeping] ChamCong lookup: nhansu_fk={nhansu_fk}, ngay={ngaynhap} → existing_pk={obj}");
                 if (obj != null && obj.ToString().Length > 3)
                 {
                     flag = true;
                     chamcong_fk = obj.ToString();
+
                     Debug.WriteLine($"[TimeKeeping] UPDATE existing ChamCong pk={chamcong_fk}");
-                    sql = "UPDATE ChamCong SET ngaysua = GETDATE(), nguoisua = '" + nguoitao + "' WHERE pk_seq = '" + chamcong_fk + "' ";
+                    sql = "UPDATE ChamCong SET ngaysua = GETDATE(), nguoisua = '" + nguoitao + "', trangthai = '" + trangthai + "' WHERE pk_seq = '" + chamcong_fk + "' ";
                     command.CommandTimeout = int.MaxValue;
                     command.CommandText = sql;
                     kq = command.ExecuteNonQuery();
@@ -89,6 +139,16 @@ namespace HLVTimeSheet.Model
                     }
                 }
 
+                if (gioIn.Equals("0"))
+                    gioIn = "";
+                if (phutIn.Equals("0"))
+                    phutIn = "";
+
+                if (gioOut.Equals("0"))
+                    gioOut = "";
+                if (phutOut.Equals("0"))
+                    phutOut = "";
+
                 // ghi nhan cham cong
                 // 1 - In
                 // 2 - Out
@@ -98,37 +158,44 @@ namespace HLVTimeSheet.Model
                 {
                     loai = "1";
 
-                    if(flag)
-                    {
-                        sql = "INSERT ChamCong_ChiTiet_LichSu(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, nguoitao, nguoisua)" +
-                            " SELECT chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, '" + nguoitao + "', '" + nguoitao + "' " +
-                            " FROM ChamCong_ChiTiet WHERE chamcong_fk = '" + chamcong_fk + "' AND loai = 1 ";                        
-                        command.CommandTimeout = int.MaxValue;
-                        command.CommandText = sql;
-                        kq = command.ExecuteNonQuery();
-
-                        sql = "DELETE ChamCong_ChiTiet WHERE chamcong_fk = '" + chamcong_fk + "' AND loai = 1 ";
-                        command.CommandTimeout = int.MaxValue;
-                        command.CommandText = sql;
-                        kq = command.ExecuteNonQuery();
-
-                    }    
-
-                    Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=1 (In): chamcong={chamcong_fk}, phongban={phongban_fk}, gio={gioIn}:{phutIn}");
-                    sql = "INSERT ChamCong_ChiTiet(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, nguoitao, nguoisua) " +
-                    " SELECT '" + chamcong_fk + "', N'" + ngaynhap + "', N'" + phongban_fk + "', N'" + nhansu_fk + "', N'" + thoigian + "', N'" + gioIn + "', '" + phutIn + "', '" + thang + "', N'" + nam + "', '" + loai + "', gioStart, phutStart, gioEnd, phutEnd, N'" + hinhanhIn + "', N'" + idMayCheckIn + "', '" + trangthai + "', '" + nguoitao + "', '" + nguoitao + "' " +
-                    " FROM GioLamViec WHERE loai = 1 AND trangthai = 1 AND phongban_fk = '" + phongban_fk + "' ";
-                    DeviceManagerLogger.Log("IMPORT", $"SQL ChiTiet loai=1: chamcong_fk={chamcong_fk}, phongban={phongban_fk}, nhansu={nhansu_fk}, ngay={ngaynhap}, gio={gioIn}:{phutIn}, idMayIn={idMayCheckIn}");
+                    sql = "SELECT COUNT(*) FROM ChamCong_ChiTiet WHERE nhansu_fk = '" + nhansu_fk + "' AND ngaynhap = '" + ngaynhap + "' AND gio = '" + gioIn + "' AND phut = '" + phutIn + "' AND loai = '1' ";
                     command.CommandTimeout = int.MaxValue;
                     command.CommandText = sql;
-                    kq = command.ExecuteNonQuery();
-                    Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=1 result: kq={kq} (0=FAIL=GioLamViec không có phongban_fk={phongban_fk})");
-                    if (kq < 1)
+                    obj = command.ExecuteScalar();
+                    if (obj != null && int.Parse(obj.ToString()) <= 0)
                     {
-                        transaction.Rollback();
-                        connection.Close();
-                        DeviceManagerLogger.Log("IMPORT", $"FAIL INSERT ChiTiet loai=1: GioLamViec không có phongban_fk={phongban_fk}, nhansu={nhansu_fk}, ngay={ngaynhap}");
-                        return "2.Error! FAIL ChiTiet loai=1 (GioLamViec phongban=" + phongban_fk + ")";
+                        if (flag)
+                        {
+                            sql = "INSERT ChamCong_ChiTiet_LichSu(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, nguoitao, nguoisua)" +
+                                " SELECT chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, '" + nguoitao + "', '" + nguoitao + "' " +
+                                " FROM ChamCong_ChiTiet WHERE chamcong_fk = '" + chamcong_fk + "' AND loai = 1 ";
+                            command.CommandTimeout = int.MaxValue;
+                            command.CommandText = sql;
+                            kq = command.ExecuteNonQuery();
+
+                            sql = "DELETE ChamCong_ChiTiet WHERE chamcong_fk = '" + chamcong_fk + "' AND loai = 1 ";
+                            command.CommandTimeout = int.MaxValue;
+                            command.CommandText = sql;
+                            kq = command.ExecuteNonQuery();
+
+                        }
+
+                        Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=1 (In): chamcong={chamcong_fk}, phongban={phongban_fk}, gio={gioIn}:{phutIn}");
+                        sql = "INSERT ChamCong_ChiTiet(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, nguoitao, nguoisua) " +
+                        " SELECT '" + chamcong_fk + "', N'" + ngaynhap + "', N'" + phongban_fk + "', N'" + nhansu_fk + "', N'" + thoigian + "', N'" + gioIn + "', '" + phutIn + "', '" + thang + "', N'" + nam + "', '" + loai + "', '" + gioStart + "', '" + phutStart + "', '" + gioEnd + "', '" + phutEnd + "', N'" + hinhanhIn + "', N'" + idMayCheckIn + "', '" + trangthai + "', '" + nguoitao + "', '" + nguoitao + "' ";
+
+                        DeviceManagerLogger.Log("IMPORT", $"SQL ChiTiet loai=1: chamcong_fk={chamcong_fk}, phongban={phongban_fk}, nhansu={nhansu_fk}, ngay={ngaynhap}, gio={gioIn}:{phutIn}, idMayIn={idMayCheckIn}");
+                        command.CommandTimeout = int.MaxValue;
+                        command.CommandText = sql;
+                        kq = command.ExecuteNonQuery();
+                        Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=1 result: kq={kq} (0=FAIL=GioLamViec không có phongban_fk={phongban_fk})");
+                        if (kq < 1)
+                        {
+                            transaction.Rollback();
+                            connection.Close();
+                            DeviceManagerLogger.Log("IMPORT", $"FAIL INSERT ChiTiet loai=1: GioLamViec không có phongban_fk={phongban_fk}, nhansu={nhansu_fk}, ngay={ngaynhap}");
+                            return "2.Error! FAIL ChiTiet loai=1 (GioLamViec phongban=" + phongban_fk + ")";
+                        }
                     }
                 }
 
@@ -138,37 +205,42 @@ namespace HLVTimeSheet.Model
                 if (thoigian.Length > 3)
                 {
                     loai = "2";
-
-                    if (flag)
-                    {
-                        sql = "INSERT ChamCong_ChiTiet_LichSu(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, nguoitao, nguoisua)" +
-                           " SELECT chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, '" + nguoitao + "', '" + nguoitao + "' " +
-                           " FROM ChamCong_ChiTiet WHERE chamcong_fk = '" + chamcong_fk + "' AND loai = 2 ";                        
-                        command.CommandTimeout = int.MaxValue;
-                        command.CommandText = sql;
-                        kq = command.ExecuteNonQuery();
-
-                        sql = "DELETE ChamCong_ChiTiet WHERE chamcong_fk = '" + chamcong_fk + "' AND loai = 2 ";
-                        command.CommandTimeout = int.MaxValue;
-                        command.CommandText = sql;
-                        kq = command.ExecuteNonQuery();
-
-                    }
-
-                    Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=2 (Out): chamcong={chamcong_fk}, phongban={phongban_fk}, gio={gioOut}:{phutOut}");
-                    sql = "INSERT ChamCong_ChiTiet(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, nguoitao, nguoisua) " +
-                    " SELECT '" + chamcong_fk + "', N'" + ngaynhap + "', N'" + phongban_fk + "', N'" + nhansu_fk + "', N'" + thoigian + "', N'" + gioOut + "', '" + phutOut + "', '" + thang + "', N'" + nam + "', '" + loai + "', gioStart, phutStart, gioEnd, phutEnd, N'" + hinhanhOut + "', N'" + idMayCheckOut + "', '" + trangthai + "', '" + nguoitao + "', '" + nguoitao + "' " +
-                    " FROM GioLamViec WHERE loai = 1 AND trangthai = 1 AND phongban_fk = '" + phongban_fk + "' ";
+                    sql = "SELECT COUNT(*) FROM ChamCong_ChiTiet WHERE nhansu_fk = '" + nhansu_fk + "' AND ngaynhap = '" + ngaynhap + "' AND gio = '" + gioOut + "' AND phut = '" + phutOut + "' AND loai = '2' ";
                     command.CommandTimeout = int.MaxValue;
                     command.CommandText = sql;
-                    kq = command.ExecuteNonQuery();
-                    Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=2 result: kq={kq} (0=FAIL=GioLamViec không có phongban_fk={phongban_fk})");
-                    if (kq < 1)
+                    obj = command.ExecuteScalar();
+                    if (obj != null && int.Parse(obj.ToString()) <= 0)
                     {
-                        transaction.Rollback();
-                        connection.Close();
-                        DeviceManagerLogger.Log("IMPORT", $"FAIL INSERT ChiTiet loai=2: GioLamViec không có phongban_fk={phongban_fk}, nhansu={nhansu_fk}, ngay={ngaynhap}");
-                        return "2.Error! FAIL ChiTiet loai=2 (GioLamViec phongban=" + phongban_fk + ")";
+                        if (flag)
+                        {
+                            sql = "INSERT ChamCong_ChiTiet_LichSu(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, nguoitao, nguoisua)" +
+                               " SELECT chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, '" + nguoitao + "', '" + nguoitao + "' " +
+                               " FROM ChamCong_ChiTiet WHERE chamcong_fk = '" + chamcong_fk + "' AND loai = 2 ";
+                            command.CommandTimeout = int.MaxValue;
+                            command.CommandText = sql;
+                            kq = command.ExecuteNonQuery();
+
+                            sql = "DELETE ChamCong_ChiTiet WHERE chamcong_fk = '" + chamcong_fk + "' AND loai = 2 ";
+                            command.CommandTimeout = int.MaxValue;
+                            command.CommandText = sql;
+                            kq = command.ExecuteNonQuery();
+
+                        }
+
+                        Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=2 (Out): chamcong={chamcong_fk}, phongban={phongban_fk}, gio={gioOut}:{phutOut}");
+                        sql = "INSERT ChamCong_ChiTiet(chamcong_fk, ngaynhap, phongban_fk, nhansu_fk, thoigian, gio, phut, thang, nam, loai, gioStart, phutStart, gioEnd, phutEnd, hinhanh, idMayChamCong, trangthai, nguoitao, nguoisua) " +
+                        " SELECT '" + chamcong_fk + "', N'" + ngaynhap + "', N'" + phongban_fk + "', N'" + nhansu_fk + "', N'" + thoigian + "', N'" + gioOut + "', '" + phutOut + "', '" + thang + "', N'" + nam + "', '" + loai + "', '" + gioStart + "', '" + phutStart + "', '" + gioEnd + "', '" + phutEnd + "', N'" + hinhanhOut + "', N'" + idMayCheckOut + "', '" + trangthai + "', '" + nguoitao + "', '" + nguoitao + "' ";
+                        command.CommandTimeout = int.MaxValue;
+                        command.CommandText = sql;
+                        kq = command.ExecuteNonQuery();
+                        Debug.WriteLine($"[TimeKeeping] INSERT ChiTiet loai=2 result: kq={kq} (0=FAIL=GioLamViec không có phongban_fk={phongban_fk})");
+                        if (kq < 1)
+                        {
+                            transaction.Rollback();
+                            connection.Close();
+                            DeviceManagerLogger.Log("IMPORT", $"FAIL INSERT ChiTiet loai=2: GioLamViec không có phongban_fk={phongban_fk}, nhansu={nhansu_fk}, ngay={ngaynhap}");
+                            return "2.Error! FAIL ChiTiet loai=2 (GioLamViec phongban=" + phongban_fk + ")";
+                        }
                     }
                 }
 
@@ -176,7 +248,7 @@ namespace HLVTimeSheet.Model
                 transaction.Commit();
                 connection.Close();
             }
-            
+
             return "";
 
         }
@@ -192,7 +264,7 @@ namespace HLVTimeSheet.Model
             connect.Open();
             transaction = connect.BeginTransaction();
 
-            string sql = " SELECT pk_seq, ma, ten, B.trangthai, diachi, dienthoai, gioitinh, mail, ngaysinh, chinhanh_fk, phongbanGoc_fk, phongbanSupport_fk, chucvu_fk, " +
+            string sql = " SELECT pk_seq, ma, ten, B.trangthai, diachi, dienthoai, gioitinh, mail, ngaysinh, chinhanh_fk, phongban_fk, phongbanGoc_fk, phongbanSupport_fk, chucvu_fk, " +
             " ISNULL(ngaybatdaulam, '') ngaybatdaulam, ISNULL(A.hinhanh, 'avatardefault.png') hinhanh, ISNULL(B.hinhanh, 'avatardefault.png') hinhanhIn, ISNULL(C.hinhanh, 'avatardefault.png') hinhanhOut, ISNULL(B.idMayChamCong, '') idMayCheckIn, " +
             " ISNULL((B.gioIn), 0) gioIn, ISNULL((B.phutIn), 0) phutIn, ISNULL((C.gioOut), 0) gioOut, ISNULL((C.phutOut), 0) phutOut, ISNULL(B.idMayChamCong, '') idMayCheckOut " +
             " FROM DanhSachNhanSu A LEFT JOIN " +
@@ -219,7 +291,7 @@ namespace HLVTimeSheet.Model
                 info = dt.Rows[0]["pk_seq"].ToString() + " -- " + dt.Rows[0]["ten"].ToString() + " -- " + dt.Rows[0]["diachi"].ToString() + " -- " +
                     dt.Rows[0]["dienthoai"].ToString() + " -- " + dt.Rows[0]["gioitinh"].ToString() + " -- " + dt.Rows[0]["mail"].ToString() + " -- " +
                     dt.Rows[0]["ngaysinh"].ToString() + " -- " + dt.Rows[0]["ngaybatdaulam"].ToString() + " -- " + dt.Rows[0]["trangthai"].ToString() + " -- " +
-                    dt.Rows[0]["chinhanh_fk"].ToString() + " -- " + dt.Rows[0]["phongbanGoc_fk"].ToString() + " -- " + dt.Rows[0]["phongbanSupport_fk"].ToString() + " -- " +
+                    dt.Rows[0]["chinhanh_fk"].ToString() + " -- " + dt.Rows[0]["phongban_fk"].ToString() + " -- " + dt.Rows[0]["phongbanSupport_fk"].ToString() + " -- " +
                     dt.Rows[0]["chucvu_fk"].ToString() + " -- " + dt.Rows[0]["gioIn"].ToString() + " -- " + dt.Rows[0]["phutIn"].ToString() + " -- " + dt.Rows[0]["gioOut"].ToString() + " -- " + dt.Rows[0]["phutOut"].ToString() + " -- " + 
                     dt.Rows[0]["hinhanh"].ToString() + " -- " + dt.Rows[0]["hinhanhIn"].ToString() + " -- " + dt.Rows[0]["hinhanhOut"].ToString() + " -- " + dt.Rows[0]["idMayCheckIn"].ToString() +" -- " + dt.Rows[0]["idMayCheckOut"].ToString();
 
@@ -228,6 +300,62 @@ namespace HLVTimeSheet.Model
             }
 
             return info;
+        }
+
+        public string GET_InformationStaff_Total(string nhansu_fk)
+        {
+            string info = "";
+
+            ConnectionDatabase conn = new ConnectionDatabase();
+            SqlConnection connect = new SqlConnection(conn.ReturnConnectionDatabase("", "", "", ""));
+            SqlTransaction transaction;
+
+            connect.Open();
+            transaction = connect.BeginTransaction();
+
+            string sql = " SELECT ISNULL(A.nghiphepNam, 0) nghiphepNam, ISNULL(A.hinhanh, 'avatardefault.png') hinhanh " +
+            " FROM DanhSachNhanSu A " +            
+            " WHERE A.pk_seq = '" + nhansu_fk + "' ";
+            SqlCommand command = new SqlCommand(sql, connect, transaction);
+            command.CommandTimeout = int.MaxValue;
+            command.CommandText = sql;
+            SqlDataReader obj = command.ExecuteReader();
+            if (obj != null)
+            {
+                DataTable dt = new DataTable();
+                dt.Load(obj);
+
+                info = dt.Rows[0]["nghiphepNam"].ToString() + " -- " + "0" + " -- " + "0" + " -- " + "0" + " -- " + "0" + " -- " + dt.Rows[0]["hinhanh"].ToString();
+
+                dt.Clone();
+                dt.Clear();
+            }
+
+            return info;
+        }
+
+        public static string GET_TypeTimeKeeping(string nhansu_fk, string ngaynhap, string gionhap)
+        {
+            string type = "1";
+            string gio = FormatString.returnHour(gionhap);
+            string phut = FormatString.returnHour(gionhap);
+            double totalTime = double.Parse(gio) + double.Parse(phut);
+
+
+            ExecuteData xl = new ExecuteData();
+            string sql = "SELECT COUNT(*) FROM ChamCong WHERE trangthai in (0, 1) AND ngaynhap = '" + ngaynhap + "' AND nhansu_fk = '" + nhansu_fk + "' ";
+            object obj = xl.ExecuteScalarSQL(sql);
+            if (obj != null && int.Parse(obj.ToString()) > 0)
+            {
+                if (totalTime >= 600) // 
+                    type = "2";
+
+                return type;
+            }
+            else if (int.Parse(obj.ToString()) == 0)
+                return type;        
+            
+            return type;
         }
     }
 }

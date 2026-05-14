@@ -63,6 +63,7 @@ namespace HLVTimeSheet.Admin
             if (!IsPostBack)
             {
                 this.InitData();
+                this.autoUpdateStatusCheckIn();
             }
         }
         private void InitData()
@@ -119,6 +120,37 @@ namespace HLVTimeSheet.Admin
                 roleJisseki = dt.Rows[8]["quyen"].ToString();
                 roleTimeSheet = dt.Rows[9]["quyen"].ToString();
             }
+        }
+
+        private void autoUpdateStatusCheckIn()
+        {
+            ExecuteData xl = new ExecuteData();
+            string sql = " SELECT chamcong_fk, nhansu_fk, ngaynhap, COUNT(*) AS soluong " +
+            " FROM ChamCong_ChiTiet " +
+            " WHERE trangthai in (1, 2, 5) AND CONVERT(datetime, ngaynhap, 105) < CONVERT(datetime, '" + DateTime.Now.ToString("dd-MM-yyyy") + "', 105) " +
+            " GROUP BY chamcong_fk, nhansu_fk, ngaynhap " +
+            " HAVING COUNT(*) = 1 ";
+            DataTable dt = xl.ReadTable(sql);
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                string chamcong_fk = dt.Rows[i]["chamcong_fk"].ToString();
+                string nhansu_fk = dt.Rows[i]["nhansu_fk"].ToString();
+                string ngaynhap = dt.Rows[i]["ngaynhap"].ToString();
+
+                sql = "UPDATE ChamCong SET trangthai = 0 WHERE pk_seq = '" + chamcong_fk + "' AND nhansu_fk = '" + nhansu_fk + "' ";
+                xl.ExecuteNonQuerySQL(sql);
+
+                sql = "UPDATE ChamCong_ChiTiet SET trangthai = 0 WHERE chamcong_fk = '" + chamcong_fk + "' AND nhansu_fk = '" + nhansu_fk + "' ";
+                xl.ExecuteNonQuerySQL(sql);
+            }    
+
+
+
+
+
+
+
+
         }
     }
 }

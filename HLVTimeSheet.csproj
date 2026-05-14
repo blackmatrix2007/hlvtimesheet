@@ -135,6 +135,7 @@
     <Content Include="Admin\uc_administrator_rolepermission.ascx" />
     <Content Include="Admin\uc_administrator_rolepermission_action.ascx" />
     <Content Include="Admin\uc_administrator_staff.ascx" />
+    <Content Include="Admin\uc_administrator_stafflist.ascx" />
     <Content Include="Admin\uc_administrator_staff_action.ascx" />
     <Content Include="Admin\uc_administrator_teamwork.ascx" />
     <Content Include="Admin\uc_administrator_teamwork_action.ascx" />
@@ -146,6 +147,7 @@
     <Content Include="Admin\uc_ConnectToDevice_synchronizeData.ascx" />
     <Content Include="Admin\uc_indexCalendar.ascx" />
     <Content Include="Admin\uc_indexMasterdata.ascx" />
+    <Content Include="Admin\uc_indexReport.ascx" />
     <Content Include="Admin\uc_indexTimeSheet.ascx" />
     <Content Include="Admin\uc_masterdata_department.ascx" />
     <Content Include="Admin\uc_masterdata_department_action.ascx" />
@@ -155,6 +157,7 @@
     <Content Include="Admin\uc_masterdata_unit.ascx" />
     <Content Include="Admin\uc_masterdata_worktype.ascx" />
     <Content Include="Admin\uc_masterdata_worktype_action.ascx" />
+    <Content Include="Admin\uc_report_dailyattendance.ascx" />
     <Content Include="Admin\uc_timekeeping_dailyattendance.ascx" />
     <Content Include="Admin\uc_timekeeping_dailyattendance_action.ascx" />
     <Content Include="Admin\uc_timekeeping_reportjisseki.ascx" />
@@ -2212,6 +2215,13 @@
     <Compile Include="Admin\uc_administrator_staff.ascx.designer.cs">
       <DependentUpon>uc_administrator_staff.ascx</DependentUpon>
     </Compile>
+    <Compile Include="Admin\uc_administrator_stafflist.ascx.cs">
+      <DependentUpon>uc_administrator_stafflist.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\uc_administrator_stafflist.ascx.designer.cs">
+      <DependentUpon>uc_administrator_stafflist.ascx</DependentUpon>
+    </Compile>
     <Compile Include="Admin\uc_administrator_staff_action.ascx.cs">
       <DependentUpon>uc_administrator_staff_action.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -2289,6 +2299,13 @@
     <Compile Include="Admin\uc_indexMasterdata.ascx.designer.cs">
       <DependentUpon>uc_indexMasterdata.ascx</DependentUpon>
     </Compile>
+    <Compile Include="Admin\uc_indexReport.ascx.cs">
+      <DependentUpon>uc_indexReport.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\uc_indexReport.ascx.designer.cs">
+      <DependentUpon>uc_indexReport.ascx</DependentUpon>
+    </Compile>
     <Compile Include="Admin\uc_indexTimeSheet.ascx.cs">
       <DependentUpon>uc_indexTimeSheet.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -2351,6 +2368,13 @@
     </Compile>
     <Compile Include="Admin\uc_masterdata_worktype_action.ascx.designer.cs">
       <DependentUpon>uc_masterdata_worktype_action.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\uc_report_dailyattendance.ascx.cs">
+      <DependentUpon>uc_report_dailyattendance.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\uc_report_dailyattendance.ascx.designer.cs">
+      <DependentUpon>uc_report_dailyattendance.ascx</DependentUpon>
     </Compile>
     <Compile Include="Admin\uc_timekeeping_dailyattendance.ascx.cs">
       <DependentUpon>uc_timekeeping_dailyattendance.ascx</DependentUpon>

@@ -49,10 +49,17 @@ namespace HLVTimeSheet.Model.DeviceManager
                 string mapNV      = row["mapNV"].ToString();
                 string nhansuFk   = row["nhansuFk"].ToString();
                 string phongbanFk = row["phongbanFk"].ToString();
-                string loaiCheck = row["loai"].ToString();
+                string ngaynhap = row["ngaynhap"].ToString();
+                string gionhap = row["gionhap"].ToString();
                 string deviceId = row["deviceId"].ToString();
 
-                Debug.WriteLine($"[Import] Row: mapNV={mapNV}, nhansuFk={nhansuFk}, phongbanFk={phongbanFk}, gioVao={row["gioVao"]}, gioRa={row["gioRa"]}");
+                string mayCheckIn = "";
+                string mayCheckOut = "";
+                string loaiCheck = "";                
+                string gioIn = "", phutIn = "";
+                string gioOut = "", phutOut = "";
+
+                Debug.WriteLine($"[Import] Row: mapNV={mapNV}, nhansuFk={nhansuFk}, phongbanFk={phongbanFk}, ngaynhap={row["ngaynhap"]}, gionhap={row["gionhap"]}");
 
                 if (string.IsNullOrEmpty(nhansuFk))
                 {
@@ -62,42 +69,23 @@ namespace HLVTimeSheet.Model.DeviceManager
                     continue;
                 }
 
-                // Tách giờ/phút vào–ra
-                string gioIn  = "", phutIn  = "";
-                string gioOut = "", phutOut = "";
-
-                if (row["gioVao"] != DBNull.Value)
-                {
-                    var gv = (DateTime)row["gioVao"];
-                    gioIn  = gv.Hour.ToString("D2");
-                    phutIn = gv.Minute.ToString("D2");
-                }
-
-                if (row["gioRa"] != DBNull.Value)
-                {
-                    var gr = (DateTime)row["gioRa"];
-                    gioOut  = gr.Hour.ToString("D2");
-                    phutOut = gr.Minute.ToString("D2");
-                }
-
-                string mayCheckIn = "";
-                string mayCheckOut = "";
-            
+                loaiCheck = TimeKeepingController.GET_TypeTimeKeeping(nhansuFk, ngaynhap, gionhap);
                 switch (loaiCheck)
                 {
-                    case "check_in":
-                        loaiCheck = "1";
+                    case "1": // In
+                        gioIn = FormatString.returnHour(gionhap);
+                        phutIn = FormatString.returnMinite(gionhap);
                         mayCheckIn = deviceId;
                         break;
-                    case "check_out":
-                        loaiCheck = "2";
-                        mayCheckOut = deviceId;
+                    case "2": // Out
+                        gioOut = FormatString.returnHour(gionhap);
+                        phutOut = FormatString.returnMinite(gionhap);
+                        mayCheckIn = deviceId;
                         break;
                     default:
-                        loaiCheck = "1";
                         break;
-
                 }    
+
 
                 // Ngày dạng dd-MM-yyyy (format lưu trong ChamCong)
                 string ngayStr = ngay.ToString("dd-MM-yyyy");
@@ -287,13 +275,11 @@ namespace HLVTimeSheet.Model.DeviceManager
                         cd.mapNV,
                         ns.pk_seq                                                           AS nhansuFk,
                         ISNULL(CAST(ns.phongban_fk AS NVARCHAR(50)), '')                    AS phongbanFk,
-                        MIN(CASE WHEN cd.loai='check_in'  AND cd.isValid=1 THEN cd.thoiGian END) AS gioVao,
-                        MAX(CASE WHEN cd.loai='check_out' AND cd.isValid=1 THEN cd.thoiGian END) AS gioRa, 
+                        CONVERT(nvarchar(10), cd.thoiGian, 105) AS ngaynhap, CONVERT(CHAR(8), cd.thoiGian, 14) gionhap, 
                         cd.deviceId, cd.loai 
                     FROM ChamCong_Device cd
                     LEFT JOIN DanhSachNhanSu ns ON ns.ma = cd.mapNV AND ns.trangthai = 1 AND CAST(cd.thoiGian AS DATE) = @ngay 
                     WHERE CAST(cd.thoiGian AS DATE) = @ngay
-                    GROUP BY cd.mapNV, cd.deviceId, cd.loai, ns.pk_seq, ns.phongban_fk
                     ORDER BY cd.mapNV";
 
                 using (var cmd = new SqlCommand(sql, sqlConn))

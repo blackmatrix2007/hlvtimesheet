@@ -52,16 +52,14 @@ namespace HLVTimeSheet.Admin
 
             switch (func)
             {
-                case "12":
+                case "101":
                     link = "Report";
-                    control = Page.LoadControl("uc_timekeeping_reportjisseki.ascx");
+                    control = Page.LoadControl("uc_report_dailyattendance.ascx");
                     break;
               
                 default:
                     link = "Report";
-
-                    control = Page.LoadControl("uc_timekeeping_reportjisseki.ascx");
-
+                    control = Page.LoadControl("uc_indexReport.ascx");
                     break;
             }
 

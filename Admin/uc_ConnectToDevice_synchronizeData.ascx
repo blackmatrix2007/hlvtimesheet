@@ -6,7 +6,7 @@
     <h4 class="mb-3">Đồng bộ máy chấm công (DeviceManager)</h4>
 
     <!-- Thông tin Webhook -->
-    <div class="card">
+    <div class="card" style="display:none;">
         <h6>Cấu hình Webhook (PUSH) — Dán URL này vào DeviceManager</h6>
         <p class="text-muted mb-1" style="font-size:.85em">
             DeviceManager sẽ tự động POST dữ liệu chấm công mỗi khi nhân viên check-in / check-out.
@@ -24,38 +24,35 @@
             <asp:TextBox ID="txtViewFrom" runat="server" CssClass="form-control mr-3" TextMode="Date" />
             <label class="mr-2">Đến ngày:</label>
             <asp:TextBox ID="txtViewTo"   runat="server" CssClass="form-control mr-3" TextMode="Date" />
-            <asp:Button ID="btnViewLogs" runat="server" Text="Xem danh sách"
-                        CssClass="btn btn-info" OnClick="BtnViewLogs_Click" />
+            <asp:Button ID="btnViewLogs" runat="server" Text="Xem danh sách" CssClass="btn btn-info" OnClick="BtnViewLogs_Click" />
         </div>
         <asp:Literal ID="litViewLogs" runat="server" />
     </div>
 
-    <!-- Kéo dữ liệu (PULL dự phòng) -->
+    <!-- Lấy dữ liệu (PULL dự phòng) -->
     <div class="card">
-        <h6>Kéo dữ liệu thủ công (PULL — dự phòng khi webhook bị mất)</h6>
+        <h6>Lấy dữ liệu thủ công (PULL — dự phòng khi webhook bị mất)</h6>
         <div class="form-inline mb-2">
             <label class="mr-2">Từ ngày:</label>
             <asp:TextBox ID="txtFrom" runat="server" CssClass="form-control mr-3" TextMode="Date" />
             <label class="mr-2">Đến ngày:</label>
             <asp:TextBox ID="txtTo"   runat="server" CssClass="form-control mr-3" TextMode="Date" />
-            <asp:Button ID="btnPull" runat="server" Text="Kéo dữ liệu"
-                        CssClass="btn btn-primary" OnClick="BtnPull_Click" />
+            <asp:Button ID="btnPull" runat="server" Text="Lấy dữ liệu" CssClass="btn btn-primary" OnClick="BtnPull_Click" /> 
+            <asp:Button ID="btnToday" runat="server" Text="Làm mới" CssClass="btn btn-sm btn-secondary mb-2" OnClick="BtnToday_Click" />
         </div>
         <asp:Label ID="lblPullResult" runat="server" />
     </div>
 
     <!-- Tổng hợp hôm nay -->
     <div class="card">
-        <h6>Tổng hợp chấm công hôm nay (từ DeviceManager API)</h6>
-        <asp:Button ID="btnToday" runat="server" Text="Làm mới"
-                    CssClass="btn btn-sm btn-secondary mb-2" OnClick="BtnToday_Click" />
+        <h6>Tổng hợp chấm công hôm nay (từ DeviceManager API)</h6>        
         <asp:Literal ID="litToday" runat="server" />
     </div>
 
     <!-- Import vào bảng công HLVTimeSheet -->
-    <div class="card">
-        <h6>Import vào bảng công HLVTimeSheet (ChamCong)</h6>
-        <p class="text-muted mb-2" style="font-size:.85em">
+    <div class="card" style="margin-top:10px;">
+        <h6 style="display:none;">Import vào bảng công HLVTimeSheet (ChamCong)</h6>
+        <p  style="display:none;font-size:.85em; " class="text-muted mb-2">
             Đọc giờ vào/ra từ <code>ChamCong_Device</code> và ghi vào bảng <code>ChamCong / ChamCong_ChiTiet</code>.
         </p>
         <div class="form-inline mb-2">
@@ -63,14 +60,13 @@
             <asp:TextBox ID="txtImportFrom" runat="server" CssClass="form-control mr-3" TextMode="Date" />
             <label class="mr-2">Đến ngày:</label>
             <asp:TextBox ID="txtImportTo" runat="server" CssClass="form-control mr-3" TextMode="Date" />
-            <asp:Button ID="btnImport" runat="server" Text="Import vào bảng công"
-                        CssClass="btn btn-success" OnClick="BtnImport_Click" />
+            <asp:Button ID="btnImport" runat="server" Text="Import vào bảng công" CssClass="btn btn-success" OnClick="BtnImport_Click" />
         </div>
         <asp:Label ID="lblImportResult" runat="server" />
     </div>
 
     <!-- Debug: Kiểm tra mapping mã NV -->
-    <div class="card">
+    <div class="card" style="display:none;">
         <h6>Kiểm tra mapping mã NV (Debug)</h6>
         <p class="text-muted mb-2" style="font-size:.85em">
             So sánh mã nhân viên trong <code>ChamCong_Device</code> với bảng <code>DanhSachNhanSu</code>.
@@ -91,7 +87,7 @@
     </div>
 
     <!-- Nhân viên đã đăng ký khuôn mặt -->
-    <div class="card">
+    <div class="card" style="display:none;">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="mb-0">Nhân viên đã đăng ký khuôn mặt trên DeviceManager</h6>
             <a href="DeviceFaceRegister.aspx" class="btn btn-sm btn-primary">&#128247; Quản lý khuôn mặt</a>

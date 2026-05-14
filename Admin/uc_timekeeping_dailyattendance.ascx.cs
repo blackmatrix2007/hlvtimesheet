@@ -107,7 +107,7 @@ namespace HLVTimeSheet.Admin
                 ddlTrangThai.Items.Add(new ListItem("Approved leave", "3"));
                 ddlTrangThai.Items.Add(new ListItem("AB", "4"));
                 ddlTrangThai.Items.Add(new ListItem("Late arrival", "5"));
-
+                
                 ddlNam.SelectedValue = DateTime.Now.ToString("yyyy");
                 ddlThang.SelectedValue = DateTime.Now.ToString("MM");
 
@@ -236,7 +236,8 @@ namespace HLVTimeSheet.Admin
 
             if (ddlPhongBan.SelectedValue.Trim().Length > 3)
             {
-                condition += " AND (a.phongban_fk = '" + ddlPhongBan.SelectedValue + "' OR a.phongbanSupport_fk = '" + ddlPhongBan.SelectedValue + "') ";
+                //                 
+                condition += " AND (a.phongban_fk in (SELECT pk_seq FROM PhongBan WHERE nhomphong_fk in (SELECT nhomphong_fk FROM PhongBan WHERE pk_seq = " + ddlPhongBan.SelectedValue + ")) OR a.phongbanSupport_fk in (SELECT pk_seq FROM PhongBan WHERE nhomphong_fk in (SELECT nhomphong_fk FROM PhongBan WHERE pk_seq = " + ddlPhongBan.SelectedValue + "))) ";
             }
 
             txtNgayNhap.Value = today;
@@ -282,6 +283,7 @@ namespace HLVTimeSheet.Admin
                 int songayApprovedLeave = 0;
                 int songayAB = 0;
                 int songayLateArrival = 0;
+                int songayNotCompleted = 0;
 
                 string nhansu_fk = dt.Rows[z]["nhansu_fk"].ToString();
                 string hinhanh = dt.Rows[z]["hinhanh"].ToString();
@@ -298,8 +300,8 @@ namespace HLVTimeSheet.Admin
 
                 content += "<tr>";
                 content += " <td style='text-align:center; border:1px solid black; padding:1px; height:28px; font-size:small;'>" + (z + 1).ToString() + "</td>";
-                content += " <td style='text-align:left; border:1px solid black; padding:1px; height:28px; font-size:small;'>" + info + "</td>";
-
+                content += " <td style='text-align:left; border:1px solid black; padding:1px; height:28px; font-size:small;'><div style='text-align:center; float:left; width:100%;'><a href='javascript:void(0);' data-toggle='modal' data-target='#exampleModalStaffYear' data-whatever='" + nhansu_fk + "' style='font-size:smaller;'>" + info + "</a></div></td>";
+                
                 foreach (string _ngaynhap in listDate)
                 {
                     info = "";
@@ -320,7 +322,7 @@ namespace HLVTimeSheet.Admin
                     int phutOut = 0;
 
                     sql = " SELECT a.trangthai, b.nhansu_fk, b.thoigian, b.loai, b.gio, b.phut, b.gioStart, b.phutStart, b.gioEnd, b.phutEnd " +
-                        " FROM ChamCong a INNER JOIN ChamCong_ChiTiet b ON a.pk_seq = b.chamcong_fk AND b.trangthai in (1, 2, 3, 4, 5) AND a.nhansu_fk = '" + nhansu_fk + "' AND a.ngaynhap = '" + _ngaynhap + "' " + 
+                        " FROM ChamCong a INNER JOIN ChamCong_ChiTiet b ON a.pk_seq = b.chamcong_fk AND b.trangthai in (0, 1, 2, 3, 4, 5) AND a.nhansu_fk = '" + nhansu_fk + "' AND a.ngaynhap = '" + _ngaynhap + "' " +
                         " ORDER BY loai, gio, phut ASC ";
                     DataTable dtK = xl.ReadTable(sql);
                     for (int i = 0; i < dtK.Rows.Count; i++)
@@ -348,8 +350,6 @@ namespace HLVTimeSheet.Admin
                             default:
                                 break;
                         }
-
-
                     }
 
                     thoigian = thoigianIn + "-" + thoigianOut;
@@ -360,10 +360,13 @@ namespace HLVTimeSheet.Admin
                         textNoteOT = "NO DATA";
                         styleTextDay = "color:white;";
                     }
-                    else
+                    else if (thoigian.Contains("00:00-00:00"))
                     {
+                        thoigian = "";
                         styleTextDay = "color:black;";
                     }
+                    else
+                        styleTextDay = "color:black;";
 
                     double valueIn = gioStart * 60 + phutStart;
                     double valueOut = gioEnd * 60 + phutEnd;
@@ -373,9 +376,13 @@ namespace HLVTimeSheet.Admin
 
                     double chenhlechIn = 0;
                     double chenhlechOut = 0;
-                    
-                    switch(trangthai)
+
+                    switch (trangthai)
                     {
+                        case "0":
+                            styleDay = "background-color: lightpink;";
+                            songayNotCompleted++;
+                            break;
                         case "1":
                             if (actualIn > valueIn)
                             {
@@ -389,14 +396,31 @@ namespace HLVTimeSheet.Admin
                             }
                             styleDay = "background-color: lightgreen;";
                             songayFulltime++;
+
+                            //if (!_ngaynhap.Equals(today) && ((thoigianIn.Length > 3 && thoigianOut.Length < 3) || (thoigianIn.Length < 3 && thoigianOut.Length > 3)))
+                            //{
+                            //    styleDay = "background-color: lightpink;";
+                            //    songayNotCompleted++;
+                            //    songayFulltime--;
+                            //}
+
                             break;
                         case "2":
                             styleDay = "background-color: yellow;";
                             songayHafltime++;
+
+                            //if (!_ngaynhap.Equals(today) && ((thoigianIn.Length > 3 && thoigianOut.Length < 3) || (thoigianIn.Length < 3 && thoigianOut.Length > 3)))
+                            //{
+                            //    styleDay = "background-color: lightpink;";
+                            //    songayNotCompleted++;
+                            //    songayHafltime--;
+                            //}
+
                             break;
                         case "3":
                             styleDay = "background-color: orange;";
                             songayApprovedLeave++;
+
                             break;
                         case "4":
                             styleDay = "background-color: orangered;";
@@ -412,13 +436,21 @@ namespace HLVTimeSheet.Admin
                             {
                                 chenhlechOut = Math.Round((actualOut - valueOut) / 60, 1);
                                 textNoteOT = "OT: " + chenhlechOut;
-                            }                            
+                            }
                             styleDay = "background-color: lightgray;";
                             songayLateArrival++;
+
+                            //if (!_ngaynhap.Equals(today) && ((thoigianIn.Length > 3 && thoigianOut.Length < 3) || (thoigianIn.Length < 3 && thoigianOut.Length > 3)))
+                            //{
+                            //    styleDay = "background-color: lightpink;";
+                            //    songayNotCompleted++;
+                            //    songayLateArrival--;
+                            //}
+
                             break;
-                        default:
+                        default:                          
                             break;
-                    }    
+                    }
 
                     // Xác định tình trạng ngày làm việc
                     info = "<div style='text-align:center; float:left; width:100%; height:33.3%;" + styleDay + "'><a href='javascript:void(0);' " + styleDay + "  data-toggle='modal' data-target='#exampleModal' data-whatever='" + _ngaynhap + "--" + nhansu_fk + "' style='font-size:smaller;" + styleTextDay + "'>" + thoigian + "</a></div>";
@@ -432,10 +464,11 @@ namespace HLVTimeSheet.Admin
                 info = "";
                 info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: lightgreen;'>" + songayFulltime.ToString() + "</div>";
                 info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: yellow;'>" + songayHafltime.ToString() + "</div>";
+                info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: lightpink;'>" + songayNotCompleted.ToString() + "</div>";
                 info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: orange;'>" + songayApprovedLeave.ToString() + "</div>";
                 info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: orangered;'>" + songayAB.ToString() + "</div>";
                 info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: lightgray;'>" + songayLateArrival.ToString() + "</div>";
-                info += "<div style='text-align:center; float:left; width:33.33%; height:50%; padding:5%; background-color: white;'></div>";
+                
                 content += " <td style='text-align:left; border:1px solid black; padding:1px; height:28px; font-size:small;'>" + info + "</td>";
                 content += "</tr>";
             }

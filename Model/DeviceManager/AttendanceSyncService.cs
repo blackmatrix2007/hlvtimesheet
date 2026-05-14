@@ -119,7 +119,10 @@ namespace HLVTimeSheet.Model.DeviceManager
                 }
 
                 // ── Duplicate check ───────────────────────────────────────────────
-                int attemptNo = GetNextAttemptNumber(sqlConn, dto.EmployeeCode, thoiGian.Date);
+                //int attemptNo = GetNextAttemptNumber(sqlConn, dto.EmployeeCode, thoiGian.Date);
+
+                int attemptNo = 0; // Mặc định gửi về
+
                 bool isDuplicate     = attemptNo > 1;
                 bool isValid         = !isDuplicate;
                 string rejectionReason = isDuplicate ? "Chấm công trùng lặp trong ngày" : null;

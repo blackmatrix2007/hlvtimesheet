@@ -54,10 +54,8 @@ namespace HLVTimeSheet.Admin.UserControls
 
                 //LAY GROUP HIEN TAI
                 string query = "SELECT pk_seq, ten_group AS nameEnglish, ten_top_menu AS tenTiengViet, ICON_LEFT FROM Group_ChucNang WHERE hienthi = '1' AND hienthi_LEFTMENU = '1' AND LEVEL in (0, 3) ";
-
                 query += " AND pk_seq in (SELECT distinct b.group_fk FROM NhomQuyen_ChucNang_ChiTiet a INNER JOIN ChucNang b on a.chucnang_fk = b.pk_seq " +
                          " WHERE xem = '1' AND nhomquyen_fk in ( SELECT nhomquyen_fk FROM NhanVien_Quyen_NhomQuyen WHERE nhanvien_fk = '" + Session["userId"].ToString() + "' )) ";
-
                 query += " ORDER BY STT ASC ";
                 DataTable dtGROUP = xl.ReadTable(query);
 
@@ -112,18 +110,18 @@ namespace HLVTimeSheet.Admin.UserControls
                     }
                     else if (dtGROUP.Rows[i]["pk_seq"].ToString().Equals("10"))
                     {
-                        if (language.Equals("1")) // Tiếng Anh
-                        {
-                            topmenu += "<li>  " +
-                                   "<a href='Report.aspx'>" + dtGROUP.Rows[i]["nameEnglish"].ToString() + "</a> " +
-                                   "<ul> ";
-                        }
-                        else if (language.Equals("2"))  // Tiếng Việt
-                        {
-                            topmenu += "<li>  " +
-                                  "<a href='Report.aspx'>" + dtGROUP.Rows[i]["tenTiengViet"].ToString() + "</a> " +
-                                  "<ul> ";
-                        }
+                        //if (language.Equals("1")) // Tiếng Anh
+                        //{
+                        //    topmenu += "<li>  " +
+                        //           "<a href='Report.aspx'>" + dtGROUP.Rows[i]["nameEnglish"].ToString() + "</a> " +
+                        //           "<ul> ";
+                        //}
+                        //else if (language.Equals("2"))  // Tiếng Việt
+                        //{
+                        //    topmenu += "<li>  " +
+                        //          "<a href='Report.aspx'>" + dtGROUP.Rows[i]["tenTiengViet"].ToString() + "</a> " +
+                        //          "<ul> ";
+                        //}
                     }
                     else
                     {
@@ -168,6 +166,23 @@ namespace HLVTimeSheet.Admin.UserControls
 
                 }
                 dtGROUP.Clone();
+
+                if (language.Equals("1")) // Tiếng Anh
+                {
+                    topmenu += "<li>  " +
+                           "<a href='Report.aspx'>Report</a> " +
+                           "<ul> ";
+                    topmenu += "    </ul> " +
+                       "</li> ";
+                }
+                else if (language.Equals("2"))  // Tiếng Việt
+                {
+                    topmenu += "<li>  " +
+                          "<a href='Report.aspx'>Báo cáo</a> " +
+                          "<ul> ";
+                    topmenu += "    </ul> " +
+                       "</li> ";
+                }
 
                 ltTopmenu.Text = topmenu;
 

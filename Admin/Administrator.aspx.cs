@@ -310,9 +310,9 @@ namespace HLVTimeSheet.Admin
                     }
 
                     break;
-                case "93":
-                    link = "Master control";
-                    control = Page.LoadControl("uc_administrator_mastercontrol.ascx");
+                case "57":
+                    link = "Staff";
+                    control = Page.LoadControl("uc_administrator_stafflist.ascx");
                     break;
                 case "999":
                     link = "Change password";
