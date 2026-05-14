@@ -56,11 +56,17 @@ namespace HLVTimeSheet.Model
                 {
                     DataTable dt = new DataTable();
                     dt.Load(objNS);
+                    if (dt.Rows.Count > 0)
                     {
                         gioStart = dt.Rows[0]["gioStart"].ToString();
                         phutStart = dt.Rows[0]["phutStart"].ToString();
                         gioEnd = dt.Rows[0]["gioEnd"].ToString();
                         phutEnd = dt.Rows[0]["phutEnd"].ToString();
+                    }
+                    else
+                    {
+                        DeviceManagerLogger.Log("IMPORT", $"WARNING: GioLamViec không có ca cho phongban_fk={phongban_fk} — dùng mặc định 08:00-17:00");
+                        gioStart = "8"; phutStart = "0"; gioEnd = "17"; phutEnd = "0";
                     }
                 }
 
